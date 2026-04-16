@@ -929,11 +929,22 @@ ParseDriver::build_array_value(std::vector<std::unique_ptr<nmhit::Node>> elems)
 namespace nmhit
 {
 
-// Forward declaration — resolve_includes calls parse recursively.
-std::unique_ptr<Node> parse(const std::filesystem::path & fname,
-                            const std::string & input,
-                            const std::vector<std::string> & pre  = {},
-                            const std::vector<std::string> & post = {});
+/// Run the Flex/Bison pipeline on @p input and return the root node.
+/// Does not resolve !include directives.
+static std::unique_ptr<Node>
+parse_raw(const std::filesystem::path & fname, const std::string & input)
+{
+  nmhit_detail::ParseDriver driver(fname, input);
+  bool ok = driver.parse();
+  if (!ok)
+  {
+    auto & errs = driver.errors();
+    if (errs.empty())
+      throw Error("parse failed (unknown error)", nullptr);
+    throw Error(errs);
+  }
+  return driver.release_root();
+}
 
 /// Resolve !include directives by recursively parsing referenced files.
 static void
@@ -974,8 +985,7 @@ resolve_includes(Node * node, const std::filesystem::path & base_dir)
     }
 
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-
-    auto included = parse(resolved, content);
+    auto included = parse_raw(resolved, content);
     resolve_includes(included.get(), resolved.parent_path());
 
     auto inc_kids = included->children();
@@ -993,10 +1003,15 @@ resolve_includes(Node * node, const std::filesystem::path & base_dir)
 
 std::unique_ptr<Node>
 parse(const std::filesystem::path & fname,
-      const std::string & input,
       const std::vector<std::string> & pre,
       const std::vector<std::string> & post)
 {
+  std::ifstream ifs(fname);
+  if (!ifs.is_open())
+    throw Error("cannot open file '" + fname.string() + "'");
+
+  std::string input((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
   std::string full;
   for (const auto & s : pre)
     full += s + '\n';
@@ -1004,18 +1019,7 @@ parse(const std::filesystem::path & fname,
   for (const auto & s : post)
     full += '\n' + s;
 
-  nmhit_detail::ParseDriver driver(fname, full);
-  bool ok = driver.parse();
-
-  if (!ok)
-  {
-    auto & errs = driver.errors();
-    if (errs.empty())
-      throw Error("parse failed (unknown error)", nullptr);
-    throw Error(errs);
-  }
-
-  auto root = driver.release_root();
+  auto root = parse_raw(fname, full);
   resolve_includes(root.get(), fname.parent_path());
   return root;
 }
