@@ -10,6 +10,7 @@
 #include <limits>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 // ─── forward declarations for Flex-generated C++ scanner functions ────────────
 // Lexer.cpp is compiled as C++ (not C), so no extern "C" wrapper.
@@ -864,7 +865,10 @@ namespace nmhit
 {
 
 // Forward declaration — resolve_includes calls parse recursively.
-std::unique_ptr<Node> parse(const std::filesystem::path & fname, const std::string & input);
+std::unique_ptr<Node> parse(const std::filesystem::path & fname,
+                            const std::string & input,
+                            const std::vector<std::string> & pre  = {},
+                            const std::vector<std::string> & post = {});
 
 /// Resolve !include directives by recursively parsing referenced files.
 static void
@@ -923,9 +927,19 @@ resolve_includes(Node * node, const std::filesystem::path & base_dir)
 }
 
 std::unique_ptr<Node>
-parse(const std::filesystem::path & fname, const std::string & input)
+parse(const std::filesystem::path & fname,
+      const std::string & input,
+      const std::vector<std::string> & pre,
+      const std::vector<std::string> & post)
 {
-  nmhit_detail::ParseDriver driver(fname, input);
+  std::string full;
+  for (const auto & s : pre)
+    full += s + '\n';
+  full += input;
+  for (const auto & s : post)
+    full += '\n' + s;
+
+  nmhit_detail::ParseDriver driver(fname, full);
   bool ok = driver.parse();
 
   if (!ok)

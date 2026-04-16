@@ -443,6 +443,35 @@ main()
       nmhit::Error);
   });
 
+  // ── 16. pre/post string arguments ─────────────────────────────────────────
+
+  run("pre_strings_parsed_before_main", []() {
+    auto root = nmhit::parse("<test>", "b = 2", {"a = 1"});
+    EXPECT(root->param<int>("a") == 1);
+    EXPECT(root->param<int>("b") == 2);
+  });
+
+  run("post_strings_parsed_after_main", []() {
+    auto root = nmhit::parse("<test>", "a = 1", {}, {"b = 2"});
+    EXPECT(root->param<int>("a") == 1);
+    EXPECT(root->param<int>("b") == 2);
+  });
+
+  run("post_override_wins_over_main", []() {
+    // ':=' in post removes the matching field from the main input.
+    auto root = nmhit::parse("<test>", "k = 1", {}, {"k := 99"});
+    EXPECT(root->param<int>("k") == 99);
+    // Only one 'k' node should remain.
+    EXPECT(root->children(nmhit::NodeType::Field).size() == 1);
+  });
+
+  run("pre_and_post_empty_vectors_are_noop", []() {
+    auto root1 = nmhit::parse("<test>", "k = 42");
+    auto root2 = nmhit::parse("<test>", "k = 42", {}, {});
+    EXPECT(root1->param<int>("k") == root2->param<int>("k"));
+    EXPECT(root1->render() == root2->render());
+  });
+
   // ── Summary ───────────────────────────────────────────────────────────────
 
   std::cerr << "\n=== Results: " << g_passed << " passed, " << g_failed << " failed ===\n";

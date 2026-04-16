@@ -309,6 +309,18 @@ brace_expr  = '${' <content, brace-depth-tracked> '}' ;
 std::unique_ptr<nmhit::Node> root = nmhit::parse("my_file.i", input_text);
 ```
 
+`parse()` accepts two optional string vectors for injecting content before and after
+the main input.  This is useful when an application collects HIT snippets from
+command-line arguments and wants them merged with the input file:
+
+```cpp
+// Pre-strings are prepended; post-strings are appended.
+// All content is parsed as a single document, so ':=' override semantics
+// apply globally across pre, main, and post.
+std::vector<std::string> cli_overrides = { "solver/max_iter := 200" };
+auto root = nmhit::parse("input.i", input_text, /*pre=*/{}, cli_overrides);
+```
+
 ### Reading values
 
 ```cpp
