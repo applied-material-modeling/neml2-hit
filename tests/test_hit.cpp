@@ -290,6 +290,41 @@ main()
     EXPECT(root->param<std::string>("derived") == "hello");
   });
 
+  run("brace_as_array_element", []() {
+    // A brace expression appearing as one element among others in a quoted array.
+    auto root = p("base = 42\nvals = '${base} 2 3'");
+    auto v = root->param<std::vector<std::string>>("vals");
+    EXPECT(v.size() == 3);
+    EXPECT(v[0] == "42");
+    EXPECT(v[1] == "2");
+    EXPECT(v[2] == "3");
+  });
+
+  run("brace_as_sole_array_element", []() {
+    // A brace expression that is the only element in a quoted array.
+    auto root = p("n = 7\nvals = '${n}'");
+    auto v = root->param<std::vector<std::string>>("vals");
+    EXPECT(v.size() == 1);
+    EXPECT(v[0] == "7");
+  });
+
+  run("brace_array_double_quoted", []() {
+    // Double-quoted arrays also support brace expressions.
+    auto root = p("tag = foo\nvals = \"${tag} bar\"");
+    auto v = root->param<std::vector<std::string>>("vals");
+    EXPECT(v.size() == 2);
+    EXPECT(v[0] == "foo");
+    EXPECT(v[1] == "bar");
+  });
+
+  run("brace_as_int_array_element", []() {
+    // A brace expression that resolves to a number in an integer array.
+    auto root = p("n = 10\nvals = '1 ${n} 3'");
+    auto v = root->param<std::vector<int>>("vals");
+    EXPECT(v.size() == 3);
+    EXPECT(v[0] == 1 && v[1] == 10 && v[2] == 3);
+  });
+
   // ── 9. fullpath / find ────────────────────────────────────────────────────
 
   run("fullpath", []() {

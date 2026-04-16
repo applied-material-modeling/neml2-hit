@@ -22,7 +22,7 @@ typedef nmhit_detail::ParseDriver HIT_Driver;
 %option extra-type="HIT_Driver *"
 
 %s SECTION_BODY IN_PARAM
-%x IN_PATH AFTER_EQ IN_ARRAY IN_DARRAY IN_BRACE IN_INCLUDE
+%x IN_PATH AFTER_EQ IN_ARRAY IN_DARRAY IN_BRACE IN_ARRAY_BRACE IN_DARRAY_BRACE IN_INCLUDE
 
 SIGN       [+\-]
 DIGIT      [0-9]
@@ -82,18 +82,44 @@ COMMENT    #[^\n]*
 <IN_ARRAY>[ \t\n\r]+                       { /* skip */ }
 <IN_ARRAY>"'"                              { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 <IN_ARRAY>";"                              { TOK(TOK_SEMICOLON); }
+<IN_ARRAY>"${"                             { DRIVER->begin_brace(); yymore(); BEGIN(IN_ARRAY_BRACE); }
 <IN_ARRAY>{FLOAT}                           { TOK_S(TOK_FLOAT); }
 <IN_ARRAY>{INTEGER}                        { TOK_S(TOK_INTEGER); }
 <IN_ARRAY>[^ \t\n\r;#$'"\\]+              { TOK_S(TOK_ARRAY_ELEM); }
 <IN_ARRAY>.                                { DRIVER->lex_error(yytext, yylineno); }
 
+<IN_ARRAY_BRACE>"${"                       { DRIVER->begin_brace(); yymore(); }
+<IN_ARRAY_BRACE>"}"                        {
+    if (DRIVER->end_brace()) {
+        BEGIN(IN_ARRAY);
+        TOK_S(TOK_BRACE_EXPR);
+    } else {
+        yymore();
+    }
+}
+<IN_ARRAY_BRACE>[^$}]+                     { yymore(); }
+<IN_ARRAY_BRACE>"$"[^{]                    { yymore(); }
+
 <IN_DARRAY>[ \t\n\r]+                      { /* skip */ }
 <IN_DARRAY>"\""                            { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 <IN_DARRAY>";"                             { TOK(TOK_SEMICOLON); }
+<IN_DARRAY>"${"                            { DRIVER->begin_brace(); yymore(); BEGIN(IN_DARRAY_BRACE); }
 <IN_DARRAY>{FLOAT}                          { TOK_S(TOK_FLOAT); }
 <IN_DARRAY>{INTEGER}                       { TOK_S(TOK_INTEGER); }
 <IN_DARRAY>[^ \t\n\r;#$'"\\]+             { TOK_S(TOK_ARRAY_ELEM); }
 <IN_DARRAY>.                               { DRIVER->lex_error(yytext, yylineno); }
+
+<IN_DARRAY_BRACE>"${"                      { DRIVER->begin_brace(); yymore(); }
+<IN_DARRAY_BRACE>"}"                       {
+    if (DRIVER->end_brace()) {
+        BEGIN(IN_DARRAY);
+        TOK_S(TOK_BRACE_EXPR);
+    } else {
+        yymore();
+    }
+}
+<IN_DARRAY_BRACE>[^$}]+                    { yymore(); }
+<IN_DARRAY_BRACE>"$"[^{]                   { yymore(); }
 
 <IN_INCLUDE>[ \t]+                         { /* skip */ }
 <IN_INCLUDE>[^ \t\n\r#][^\n\r#]*          {

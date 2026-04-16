@@ -383,7 +383,7 @@ field_split_tokens(const std::string & raw, const Node * n)
 {
   std::string content = field_unquote(raw);
   if (has_brace_expr(content))
-    content = expand_brace_expr(raw, n);
+    content = expand_brace_expr(content, n);
   std::vector<std::string> tokens;
   std::istringstream ss(content);
   std::string tok;

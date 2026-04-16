@@ -155,6 +155,7 @@ array_elem
   : TOK_ARRAY_ELEM { $$ = std::move($1); }
   | TOK_INTEGER    { $$ = std::move($1); }
   | TOK_FLOAT       { $$ = std::move($1); }
+  | TOK_BRACE_EXPR { $$ = std::move($1); }
   ;
 
 /* ── file include ─────────────────────────────────────────────────────────── */
