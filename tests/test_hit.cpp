@@ -217,6 +217,37 @@ main()
     EXPECT(root->param<int>("s/a/b") == 99);
   });
 
+  run("path_split_shared_parent", []() {
+    // Two path-split fields sharing a common ancestor must merge into one section.
+    auto root = p("Models/a/foo = 1\nModels/b/bar = 2");
+    EXPECT(root->param<int>("Models/a/foo") == 1);
+    EXPECT(root->param<int>("Models/b/bar") == 2);
+    // Only one top-level "Models" section should exist.
+    EXPECT(root->children(nmhit::NodeType::Section).size() == 1);
+  });
+
+  run("path_split_shared_parent_in_section", []() {
+    // Same merging applies inside an explicit section.
+    auto root = p("[outer]\n  a/x = 10\n  a/y = 20\n[]");
+    EXPECT(root->param<int>("outer/a/x") == 10);
+    EXPECT(root->param<int>("outer/a/y") == 20);
+  });
+
+  run("path_split_override_shared_parent", []() {
+    // ':=' override through a shared path-split parent.
+    auto root = p("a/k = 1\na/k := 99");
+    EXPECT(root->param<int>("a/k") == 99);
+    // Only one Field "k" should survive.
+    auto * sec = root->find("a");
+    EXPECT(sec != nullptr);
+    EXPECT(sec->children(nmhit::NodeType::Field).size() == 1);
+  });
+
+  run("path_split_duplicate_error_shared_parent", []() {
+    // Duplicate (non-override) field through a shared path-split parent is an error.
+    EXPECT_THROW(p("a/k = 1\na/k = 2"), nmhit::Error);
+  });
+
   run("multiple_sections", []() {
     auto root = p("[a]\n  x = 1\n[]\n[b]\n  y = 2\n[]");
     EXPECT(root->param<int>("a/x") == 1);

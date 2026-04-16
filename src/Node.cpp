@@ -680,57 +680,122 @@ ParseDriver::parse()
 
 // ── Tree-building helpers ─────────────────────────────────────────────────────
 
-/// Apply last-override-wins semantics to items.
+/// Apply last-override-wins semantics to items, merging same-name sections.
 ///
-/// For each field name seen more than once:
+/// Pass 1 — section merge: sections with the same name are collapsed into the
+///   first occurrence by moving all children of the duplicate into the first.
+///   This handles path-split fields that share a common ancestor section
+///   (e.g. "Models/a/foo = 1" and "Models/b/bar = 2" both create a "Models"
+///   wrapper; the two wrappers are merged so lookup through a single "Models"
+///   finds both).
+///
+/// Pass 2 — field duplicate / override check (per level):
 ///   - If the later occurrence was built with ':=', the earlier one is removed.
 ///   - If the later occurrence was built with '=', an error is recorded.
+///
+/// Pass 3 — recurse into each remaining section to apply the same logic to
+///   its children (needed so that path-split overrides like "a/k = 1" followed
+///   by "a/k := 2" are resolved inside the merged "a" section).
 void
 ParseDriver::apply_overrides(std::vector<std::unique_ptr<nmhit::Node>> & items)
 {
-  // Maps field name → index of the most-recently-seen Field with that name.
-  std::unordered_map<std::string, std::size_t> first_idx;
-  std::vector<bool> removed(items.size(), false);
-
-  for (std::size_t i = 0; i < items.size(); ++i)
+  // ── Pass 1: merge same-name sections ─────────────────────────────────────
   {
-    const auto * f = dynamic_cast<const nmhit::Field *>(items[i].get());
-    if (!f)
-      continue;
-    const std::string & name = f->path();
-    auto it = first_idx.find(name);
-    if (it != first_idx.end())
+    std::unordered_map<std::string, std::size_t> section_first;
+    std::vector<bool> merged(items.size(), false);
+
+    for (std::size_t i = 0; i < items.size(); ++i)
     {
-      if (!_override_fields.count(f))
+      auto * sec = dynamic_cast<nmhit::Section *>(items[i].get());
+      if (!sec)
+        continue;
+
+      auto it = section_first.find(sec->path());
+      if (it != section_first.end())
       {
-        _errors.push_back({f->filename(),
-                           f->line(),
-                           f->column(),
-                           "duplicate field '" + name + "': use ':=' to override"});
-        _failed = true;
+        auto * first = dynamic_cast<nmhit::Section *>(items[it->second].get());
+        auto raw_kids = sec->children();
+        for (auto * k : raw_kids)
+          first->add_child(sec->remove_child(k));
+        merged[i] = true;
       }
       else
       {
-        // Override: discard the earlier occurrence, keep this one.
-        removed[it->second] = true;
-        it->second = i;
+        section_first[sec->path()] = i;
       }
     }
-    else
+
+    if (std::any_of(merged.begin(), merged.end(), [](bool b) { return b; }))
     {
-      first_idx[name] = i;
+      std::vector<std::unique_ptr<nmhit::Node>> kept;
+      kept.reserve(items.size());
+      for (std::size_t i = 0; i < items.size(); ++i)
+        if (!merged[i])
+          kept.push_back(std::move(items[i]));
+      items = std::move(kept);
     }
   }
 
-  // Compact the items vector if anything was removed.
-  if (std::any_of(removed.begin(), removed.end(), [](bool b) { return b; }))
+  // ── Pass 2: field duplicate / override check at this level ───────────────
   {
-    std::vector<std::unique_ptr<nmhit::Node>> kept;
-    kept.reserve(items.size());
+    std::unordered_map<std::string, std::size_t> first_idx;
+    std::vector<bool> removed(items.size(), false);
+
     for (std::size_t i = 0; i < items.size(); ++i)
-      if (!removed[i])
-        kept.push_back(std::move(items[i]));
-    items = std::move(kept);
+    {
+      const auto * f = dynamic_cast<const nmhit::Field *>(items[i].get());
+      if (!f)
+        continue;
+      const std::string & name = f->path();
+      auto it = first_idx.find(name);
+      if (it != first_idx.end())
+      {
+        if (!_override_fields.count(f))
+        {
+          _errors.push_back({f->filename(),
+                             f->line(),
+                             f->column(),
+                             "duplicate field '" + name + "': use ':=' to override"});
+          _failed = true;
+        }
+        else
+        {
+          removed[it->second] = true;
+          it->second = i;
+        }
+      }
+      else
+      {
+        first_idx[name] = i;
+      }
+    }
+
+    if (std::any_of(removed.begin(), removed.end(), [](bool b) { return b; }))
+    {
+      std::vector<std::unique_ptr<nmhit::Node>> kept;
+      kept.reserve(items.size());
+      for (std::size_t i = 0; i < items.size(); ++i)
+        if (!removed[i])
+          kept.push_back(std::move(items[i]));
+      items = std::move(kept);
+    }
+  }
+
+  // ── Pass 3: recurse into each section ────────────────────────────────────
+  for (auto & item : items)
+  {
+    auto * sec = dynamic_cast<nmhit::Section *>(item.get());
+    if (!sec)
+      continue;
+
+    auto raw_kids = sec->children();
+    std::vector<std::unique_ptr<nmhit::Node>> children;
+    children.reserve(raw_kids.size());
+    for (auto * k : raw_kids)
+      children.push_back(sec->remove_child(k));
+    apply_overrides(children);
+    for (auto & child : children)
+      sec->add_child(std::move(child));
   }
 }
 
