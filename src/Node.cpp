@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <limits>
 #include <sstream>
@@ -32,7 +33,7 @@ ErrorMessage::str() const
   std::ostringstream ss;
   if (!filename.empty())
   {
-    ss << filename;
+    ss << filename.string();
     if (line > 0)
     {
       ss << ':' << line;
@@ -83,7 +84,7 @@ Error::Error(const std::vector<ErrorMessage> & msgs) : messages(msgs), _what(joi
 Node::~Node() = default;
 
 void
-Node::_set_location(const std::string & fname, int line, int col)
+Node::_set_location(const std::filesystem::path & fname, int line, int col)
 {
   _filename = fname;
   _line = line;
@@ -109,7 +110,7 @@ std::string
 Node::file_location() const
 {
   std::ostringstream ss;
-  ss << _filename << ':' << _line << ':' << _col;
+  ss << _filename.string() << ':' << _line << ':' << _col;
   return ss.str();
 }
 
@@ -571,7 +572,7 @@ private:
 
 // ── Constructor / destructor ──────────────────────────────────────────────────
 
-ParseDriver::ParseDriver(const std::string & fname, const std::string & input)
+ParseDriver::ParseDriver(const std::filesystem::path & fname, const std::string & input)
   : _fname(fname), _input(input)
 {}
 
@@ -862,9 +863,12 @@ ParseDriver::build_array_value(std::vector<std::unique_ptr<nmhit::Node>> elems)
 namespace nmhit
 {
 
+// Forward declaration — resolve_includes calls parse recursively.
+std::unique_ptr<Node> parse(const std::filesystem::path & fname, const std::string & input);
+
 /// Resolve !include directives by recursively parsing referenced files.
 static void
-resolve_includes(Node * node, const std::string & base_dir)
+resolve_includes(Node * node, const std::filesystem::path & base_dir)
 {
   for (auto * child : node->children())
     if (child->type() == NodeType::Section || child->type() == NodeType::Root)
@@ -887,11 +891,10 @@ resolve_includes(Node * node, const std::string & base_dir)
     if (!inc)
       break;
 
-    std::string path = inc->include_path();
-    if (path.empty() || path[0] != '/')
-      path = base_dir + '/' + path;
+    std::filesystem::path inc_path = inc->include_path();
+    std::filesystem::path resolved = inc_path.is_absolute() ? inc_path : base_dir / inc_path;
 
-    std::ifstream ifs(path);
+    std::ifstream ifs(resolved);
     if (!ifs.is_open())
     {
       ErrorMessage em{inc->filename(),
@@ -903,15 +906,8 @@ resolve_includes(Node * node, const std::string & base_dir)
 
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 
-    std::string new_base = path;
-    auto slash = new_base.rfind('/');
-    if (slash != std::string::npos)
-      new_base = new_base.substr(0, slash);
-    else
-      new_base = ".";
-
-    auto included = parse(path, content);
-    resolve_includes(included.get(), new_base);
+    auto included = parse(resolved, content);
+    resolve_includes(included.get(), resolved.parent_path());
 
     auto inc_kids = included->children();
     std::vector<std::unique_ptr<Node>> to_insert;
@@ -927,7 +923,7 @@ resolve_includes(Node * node, const std::string & base_dir)
 }
 
 std::unique_ptr<Node>
-parse(const std::string & fname, const std::string & input)
+parse(const std::filesystem::path & fname, const std::string & input)
 {
   nmhit_detail::ParseDriver driver(fname, input);
   bool ok = driver.parse();
@@ -941,15 +937,7 @@ parse(const std::string & fname, const std::string & input)
   }
 
   auto root = driver.release_root();
-
-  std::string base_dir = ".";
-  {
-    auto slash = fname.rfind('/');
-    if (slash != std::string::npos)
-      base_dir = fname.substr(0, slash);
-  }
-  resolve_includes(root.get(), base_dir);
-
+  resolve_includes(root.get(), fname.parent_path());
   return root;
 }
 

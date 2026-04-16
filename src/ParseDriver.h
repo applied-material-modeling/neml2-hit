@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -19,7 +20,7 @@ namespace nmhit_detail
 class ParseDriver
 {
 public:
-  ParseDriver(const std::string & fname, const std::string & input);
+  ParseDriver(const std::filesystem::path & fname, const std::string & input);
   ~ParseDriver();
 
   /// Run the full parse.  Returns true on success, false if errors occurred.
@@ -91,7 +92,7 @@ public:
   // ── Results ───────────────────────────────────────────────────────────
 
   std::unique_ptr<nmhit::Node> release_root() { return std::move(_root); }
-  const std::string & filename() const { return _fname; }
+  const std::filesystem::path & filename() const { return _fname; }
   bool failed() const { return _failed; }
   const std::vector<nmhit::ErrorMessage> & errors() const { return _errors; }
 
@@ -100,7 +101,7 @@ private:
   /// fields that are subsequently overridden with ':=', and emits an error
   /// for any duplicate that does not use ':='.
   void apply_overrides(std::vector<std::unique_ptr<nmhit::Node>> & items);
-  std::string _fname;
+  std::filesystem::path _fname;
   std::string _input;
 
   // Flex scanner state

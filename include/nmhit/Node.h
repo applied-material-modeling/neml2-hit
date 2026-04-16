@@ -3,6 +3,7 @@
 #include "nmhit/TypeRegistry.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -21,7 +22,7 @@ class Node;
 
 struct ErrorMessage
 {
-  std::string filename;
+  std::filesystem::path filename;
   int line = 0;
   int column = 0;
   std::string message;
@@ -90,7 +91,7 @@ public:
 
   int line() const { return _line; }
   int column() const { return _col; }
-  const std::string & filename() const { return _filename; }
+  const std::filesystem::path & filename() const { return _filename; }
 
   /// "filename:line:col"
   std::string file_location() const;
@@ -155,7 +156,7 @@ public:
 
   // ── internal setters (used by the parser) ─────────────────────────────────
 
-  void _set_location(const std::string & fname, int line, int col);
+  void _set_location(const std::filesystem::path & fname, int line, int col);
 
 protected:
   Node() = default;
@@ -214,7 +215,7 @@ private:
   Node * _parent = nullptr;
   std::vector<std::unique_ptr<Node>> _children;
 
-  std::string _filename;
+  std::filesystem::path _filename;
   int _line = 0;
   int _col = 0;
 
@@ -298,13 +299,5 @@ public:
   }
   std::unique_ptr<Node> clone() const override { return std::make_unique<Blank>(); }
 };
-
-// ─── public API ──────────────────────────────────────────────────────────────
-
-/// Parse HIT input text and return the document root.
-/// @param fname  label used in error messages (typically the file path)
-/// @param input  complete HIT text
-/// @throws hit::Error on syntax errors
-std::unique_ptr<Node> parse(const std::string & fname, const std::string & input);
 
 } // namespace nmhit
