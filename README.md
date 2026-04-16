@@ -302,24 +302,28 @@ brace_expr  = '${' <content, brace-depth-tracked> '}' ;
 
 ### Parsing
 
+Two entry points are provided to avoid ambiguity when passing string literals:
+
 ```cpp
 #include "nmhit/nmhit.h"
 
-// Read and parse a HIT file.  Throws nmhit::Error if the file cannot be
-// opened or on syntax errors.
-std::unique_ptr<nmhit::Node> root = nmhit::parse("my_file.i");
+// Read and parse a file from disk.
+// Throws nmhit::Error if the file cannot be opened or on syntax errors.
+std::unique_ptr<nmhit::Node> root = nmhit::parse_file("my_file.i");
+
+// Parse an in-memory string.
+// !include paths are resolved relative to the current working directory.
+std::unique_ptr<nmhit::Node> root = nmhit::parse_text("dim = 3\n");
 ```
 
-`parse()` accepts two optional string vectors for injecting content before and after
-the file.  This is useful when an application collects HIT snippets from
-command-line arguments and wants them merged with the input file:
+Both functions accept optional pre/post string vectors for injecting HIT snippets
+(e.g. command-line overrides).  All content is concatenated and parsed as a single
+document, so `:=` override semantics apply globally across all sources:
 
 ```cpp
-// Pre-strings are prepended; post-strings are appended.
-// All content is parsed as a single document, so ':=' override semantics
-// apply globally across pre, main, and post.
 std::vector<std::string> cli_overrides = { "solver/max_iter := 200" };
-auto root = nmhit::parse("input.i", /*pre=*/{}, cli_overrides);
+auto root = nmhit::parse_file("input.i", /*pre=*/{}, cli_overrides);
+auto root = nmhit::parse_text(input_text, /*pre=*/{}, cli_overrides);
 ```
 
 ### Reading values

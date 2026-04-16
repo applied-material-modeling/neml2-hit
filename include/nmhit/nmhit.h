@@ -23,8 +23,22 @@ namespace nmhit
 /// document, so override semantics (':=') apply globally across all sources.
 ///
 /// @throws nmhit::Error if the file cannot be opened or on syntax errors
-std::unique_ptr<Node> parse(const std::filesystem::path & fname,
-                            const std::vector<std::string> & pre  = {},
-                            const std::vector<std::string> & post = {});
+std::unique_ptr<Node> parse_file(const std::filesystem::path & fname,
+                                 const std::vector<std::string> & pre  = {},
+                                 const std::vector<std::string> & post = {});
+
+/// Parse HIT text from an in-memory string and return the document root.
+///
+/// @param input  complete HIT text to parse
+/// @param pre    HIT snippets prepended before @p input (parsed as one document)
+/// @param post   HIT snippets appended after  @p input (parsed as one document)
+///
+/// Error messages carry no filename.  @c !include paths are resolved relative
+/// to the current working directory.
+///
+/// @throws nmhit::Error on syntax errors
+std::unique_ptr<Node> parse_text(const std::string & input,
+                                 const std::vector<std::string> & pre  = {},
+                                 const std::vector<std::string> & post = {});
 
 } // namespace nmhit

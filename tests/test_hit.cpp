@@ -13,7 +13,6 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -72,16 +71,14 @@ run(const std::string & name, std::function<void()> fn)
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-// Shared temp file used by the p() helper.  Tests are single-threaded so one
-// path is sufficient.
+// Shared temp file used by tests that exercise parse_file().
 static const std::filesystem::path g_test_file =
   std::filesystem::temp_directory_path() / "nmhit_test.i";
 
 static std::unique_ptr<nmhit::Node>
 p(const std::string & input)
 {
-  { std::ofstream f(g_test_file); f << input; }
-  return nmhit::parse(g_test_file);
+  return nmhit::parse_text(input);
 }
 
 // ─── custom type used in section 14 tests ────────────────────────────────────
@@ -520,32 +517,38 @@ main()
   // ── 16. pre/post string arguments ─────────────────────────────────────────
 
   run("pre_strings_parsed_before_main", []() {
-    { std::ofstream f(g_test_file); f << "b = 2"; }
-    auto root = nmhit::parse(g_test_file, {"a = 1"});
+    auto root = nmhit::parse_text("b = 2", {"a = 1"});
     EXPECT(root->param<int>("a") == 1);
     EXPECT(root->param<int>("b") == 2);
   });
 
   run("post_strings_parsed_after_main", []() {
-    { std::ofstream f(g_test_file); f << "a = 1"; }
-    auto root = nmhit::parse(g_test_file, {}, {"b = 2"});
+    auto root = nmhit::parse_text("a = 1", {}, {"b = 2"});
     EXPECT(root->param<int>("a") == 1);
     EXPECT(root->param<int>("b") == 2);
   });
 
   run("post_override_wins_over_main", []() {
-    { std::ofstream f(g_test_file); f << "k = 1"; }
-    auto root = nmhit::parse(g_test_file, {}, {"k := 99"});
+    auto root = nmhit::parse_text("k = 1", {}, {"k := 99"});
     EXPECT(root->param<int>("k") == 99);
     EXPECT(root->children(nmhit::NodeType::Field).size() == 1);
   });
 
   run("pre_and_post_empty_vectors_are_noop", []() {
-    { std::ofstream f(g_test_file); f << "k = 42"; }
-    auto root1 = nmhit::parse(g_test_file);
-    auto root2 = nmhit::parse(g_test_file, {}, {});
+    auto root1 = nmhit::parse_text("k = 42");
+    auto root2 = nmhit::parse_text("k = 42", {}, {});
     EXPECT(root1->param<int>("k") == root2->param<int>("k"));
     EXPECT(root1->render() == root2->render());
+  });
+
+  run("parse_file_reads_from_disk", []() {
+    { std::ofstream f(g_test_file); f << "x = 7\n"; }
+    auto root = nmhit::parse_file(g_test_file);
+    EXPECT(root->param<int>("x") == 7);
+  });
+
+  run("parse_file_missing_throws", []() {
+    EXPECT_THROW(nmhit::parse_file("/nonexistent/path/file.i"), nmhit::Error);
   });
 
   // ── Summary ───────────────────────────────────────────────────────────────

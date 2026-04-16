@@ -1002,9 +1002,9 @@ resolve_includes(Node * node, const std::filesystem::path & base_dir)
 }
 
 std::unique_ptr<Node>
-parse(const std::filesystem::path & fname,
-      const std::vector<std::string> & pre,
-      const std::vector<std::string> & post)
+parse_file(const std::filesystem::path & fname,
+           const std::vector<std::string> & pre,
+           const std::vector<std::string> & post)
 {
   std::ifstream ifs(fname);
   if (!ifs.is_open())
@@ -1021,6 +1021,23 @@ parse(const std::filesystem::path & fname,
 
   auto root = parse_raw(fname, full);
   resolve_includes(root.get(), fname.parent_path());
+  return root;
+}
+
+std::unique_ptr<Node>
+parse_text(const std::string & input,
+           const std::vector<std::string> & pre,
+           const std::vector<std::string> & post)
+{
+  std::string full;
+  for (const auto & s : pre)
+    full += s + '\n';
+  full += input;
+  for (const auto & s : post)
+    full += '\n' + s;
+
+  auto root = parse_raw({}, full);
+  resolve_includes(root.get(), std::filesystem::current_path());
   return root;
 }
 
