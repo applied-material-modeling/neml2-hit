@@ -400,6 +400,32 @@ main()
     EXPECT(root2->param<int>("mesh/dim") == 3);
   });
 
+  // ── 12. Scalar converter public API ──────────────────────────────────────
+
+  run("parse_bool_true", []() { EXPECT(nmhit::parse_bool("true") == true); });
+  run("parse_bool_false", []() { EXPECT(nmhit::parse_bool("false") == false); });
+  run("parse_bool_quoted", []() { EXPECT(nmhit::parse_bool("'true'") == true); });
+  run("parse_bool_invalid_throws", []() {
+    EXPECT_THROW(nmhit::parse_bool("yes"), nmhit::Error);
+  });
+
+  run("parse_int_positive", []() { EXPECT(nmhit::parse_int("42") == int64_t{42}); });
+  run("parse_int_negative", []() { EXPECT(nmhit::parse_int("-7") == int64_t{-7}); });
+  run("parse_int_quoted", []() { EXPECT(nmhit::parse_int("'10'") == int64_t{10}); });
+  run("parse_int_invalid_throws", []() {
+    EXPECT_THROW(nmhit::parse_int("3.14"), nmhit::Error);
+  });
+
+  run("parse_double_value", []() { EXPECT(nmhit::parse_double("3.14") == 3.14); });
+  run("parse_double_scientific", []() { EXPECT(nmhit::parse_double("1e3") == 1000.0); });
+  run("parse_double_invalid_throws", []() {
+    EXPECT_THROW(nmhit::parse_double("abc"), nmhit::Error);
+  });
+
+  run("parse_float_value", []() {
+    EXPECT(nmhit::parse_float("1.5") == 1.5f);
+  });
+
   // ── 12. Misc value types ──────────────────────────────────────────────────
 
   run("size_t_value", []() {

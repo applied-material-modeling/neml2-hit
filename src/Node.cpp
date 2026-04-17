@@ -1,5 +1,4 @@
-#include "nmhit/Node.h"
-#include "nmhit/BraceExpr.h"
+#include "nmhit/nmhit.h"
 #include "ParseDriver.h"
 
 #include <algorithm>
@@ -219,34 +218,26 @@ Node::remove_child(Node * child)
 
 // ── TypeRegistry helpers ──────────────────────────────────────────────────────
 
-// Forward declarations needed by TypeRegistry::_store() initialiser.
-static bool parse_bool(const std::string & raw, const Node * n);
-static int64_t parse_int(const std::string & raw, const Node * n);
-static double parse_double(const std::string & raw, const Node * n);
-
 std::unordered_map<std::type_index, std::function<std::any(const std::string &, const Node *)>> &
 TypeRegistry::_store()
 {
-  static auto m = []()
-  {
+  static auto m = []() {
     std::unordered_map<std::type_index, std::function<std::any(const std::string &, const Node *)>>
       map;
 
-    map[std::type_index(typeid(bool))] =
-      [](const std::string & s, const Node * n) -> std::any { return parse_bool(s, n); };
+    map[std::type_index(typeid(bool))] = [](const std::string & s, const Node * n) -> std::any {
+      return parse_bool(s, n);
+    };
 
-    map[std::type_index(typeid(int))] =
-      [](const std::string & s, const Node * n) -> std::any
-    {
+    map[std::type_index(typeid(int))] = [](const std::string & s, const Node * n) -> std::any {
       int64_t v = parse_int(s, n);
       if (v < std::numeric_limits<int>::min() || v > std::numeric_limits<int>::max())
         throw Error("'" + s + "' overflows int", n);
       return static_cast<int>(v);
     };
 
-    map[std::type_index(typeid(unsigned int))] =
-      [](const std::string & s, const Node * n) -> std::any
-    {
+    map[std::type_index(typeid(unsigned int))] = [](const std::string & s,
+                                                    const Node * n) -> std::any {
       int64_t v = parse_int(s, n);
       if (v < 0)
         throw Error("'" + s + "' cannot be read as unsigned int (value is negative)", n);
@@ -255,12 +246,12 @@ TypeRegistry::_store()
       return static_cast<unsigned int>(v);
     };
 
-    map[std::type_index(typeid(int64_t))] =
-      [](const std::string & s, const Node * n) -> std::any { return parse_int(s, n); };
+    map[std::type_index(typeid(int64_t))] = [](const std::string & s, const Node * n) -> std::any {
+      return parse_int(s, n);
+    };
 
-    map[std::type_index(typeid(std::size_t))] =
-      [](const std::string & s, const Node * n) -> std::any
-    {
+    map[std::type_index(typeid(std::size_t))] = [](const std::string & s,
+                                                   const Node * n) -> std::any {
       int64_t v = parse_int(s, n);
       if (v < 0)
         throw Error("'" + s + "' cannot be read as size_t (value is negative)", n);
@@ -270,15 +261,18 @@ TypeRegistry::_store()
       return static_cast<std::size_t>(v);
     };
 
-    map[std::type_index(typeid(double))] =
-      [](const std::string & s, const Node * n) -> std::any { return parse_double(s, n); };
+    map[std::type_index(typeid(double))] = [](const std::string & s, const Node * n) -> std::any {
+      return parse_double(s, n);
+    };
 
-    map[std::type_index(typeid(float))] =
-      [](const std::string & s, const Node * n) -> std::any
-    { return static_cast<float>(parse_double(s, n)); };
+    map[std::type_index(typeid(float))] = [](const std::string & s, const Node * n) -> std::any {
+      return static_cast<float>(parse_double(s, n));
+    };
 
-    map[std::type_index(typeid(std::string))] =
-      [](const std::string & s, const Node *) -> std::any { return s; };
+    map[std::type_index(typeid(std::string))] = [](const std::string & s,
+                                                   const Node *) -> std::any {
+      return s;
+    };
 
     return map;
   }();
@@ -321,8 +315,7 @@ field_unquote(const std::string & raw)
   return raw;
 }
 
-/// Parse a boolean from a raw value string.
-static bool
+bool
 parse_bool(const std::string & raw, const Node * n)
 {
   std::string v = field_unquote(raw);
@@ -333,8 +326,7 @@ parse_bool(const std::string & raw, const Node * n)
   throw Error("'" + raw + "' is not a boolean value (expected 'true' or 'false')", n);
 }
 
-/// Parse an integer from a raw value string.
-static int64_t
+int64_t
 parse_int(const std::string & raw, const Node * n)
 {
   try
@@ -356,8 +348,7 @@ parse_int(const std::string & raw, const Node * n)
   }
 }
 
-/// Parse a double from a raw value string.
-static double
+double
 parse_double(const std::string & raw, const Node * n)
 {
   try
@@ -377,6 +368,12 @@ parse_double(const std::string & raw, const Node * n)
   {
     throw Error("'" + raw + "' is not a valid number", n);
   }
+}
+
+float
+parse_float(const std::string & raw, const Node * n)
+{
+  return static_cast<float>(parse_double(raw, n));
 }
 
 /// Return the string value of a raw field string (strips quotes, expands braces).
@@ -504,8 +501,7 @@ Section::clone() const
 // Field
 // ═══════════════════════════════════════════════════════════════════════════════
 
-Field::Field(const std::string & name, const std::string & raw_value)
-  : _name(name), _raw(raw_value)
+Field::Field(const std::string & name, const std::string & raw_value) : _name(name), _raw(raw_value)
 {}
 
 void
@@ -576,7 +572,10 @@ public:
   explicit IncludeNode(const std::string & path) : _path(path) {}
   nmhit::NodeType type() const override { return nmhit::NodeType::Blank; /* internal */ }
   std::string render(int, const std::string &) const override { return ""; }
-  std::unique_ptr<nmhit::Node> clone() const override { return std::make_unique<IncludeNode>(_path); }
+  std::unique_ptr<nmhit::Node> clone() const override
+  {
+    return std::make_unique<IncludeNode>(_path);
+  }
   const std::string & include_path() const { return _path; }
 
 private:

@@ -389,6 +389,17 @@ std::string text = root->render();
 std::string text = root->render(0, "    ");  // 4-space indent
 ```
 
+### Scalar converters
+
+The same conversions used internally by `param<T>()` are available as free functions for use on raw strings (e.g. from `Field::raw_val()`).  Surrounding single or double quotes are stripped before conversion.  All functions throw `nmhit::Error` on failure; the optional `ctx` node is used only to attach file/line/column information to the error.
+
+```cpp
+bool    nmhit::parse_bool  (const std::string & s, const nmhit::Node * ctx = nullptr);
+int64_t nmhit::parse_int   (const std::string & s, const nmhit::Node * ctx = nullptr);
+double  nmhit::parse_double(const std::string & s, const nmhit::Node * ctx = nullptr);
+float   nmhit::parse_float (const std::string & s, const nmhit::Node * ctx = nullptr);
+```
+
 ### Custom types
 
 Register a scalar parser once before any `param<T>()` call:

@@ -41,4 +41,17 @@ std::unique_ptr<Node> parse_text(const std::string & input,
                                  const std::vector<std::string> & pre  = {},
                                  const std::vector<std::string> & post = {});
 
+// ── Scalar value converters ───────────────────────────────────────────────────
+//
+// Convert a raw string (as stored in Field::raw_val()) to a native type.
+// Surrounding single or double quotes are stripped before conversion.
+//
+// On failure nmhit::Error is thrown.  If @p ctx is non-null it is used to
+// attach file / line / column information to the error message.
+
+bool    parse_bool  (const std::string & s, const Node * ctx = nullptr);
+int64_t parse_int   (const std::string & s, const Node * ctx = nullptr);
+double  parse_double(const std::string & s, const Node * ctx = nullptr);
+float   parse_float (const std::string & s, const Node * ctx = nullptr);
+
 } // namespace nmhit
