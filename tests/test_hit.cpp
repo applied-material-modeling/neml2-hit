@@ -402,6 +402,21 @@ main()
 
   // ── 12. Misc value types ──────────────────────────────────────────────────
 
+  run("size_t_value", []() {
+    auto root = p("n = 42");
+    EXPECT(root->param<std::size_t>("n") == std::size_t{42});
+  });
+
+  run("size_t_zero", []() {
+    auto root = p("n = 0");
+    EXPECT(root->param<std::size_t>("n") == std::size_t{0});
+  });
+
+  run("size_t_negative_throws", []() {
+    auto root = p("n = -1");
+    EXPECT_THROW(root->param<std::size_t>("n"), nmhit::Error);
+  });
+
   run("int_as_double", []() {
     auto root = p("k = 10");
     EXPECT(root->param<double>("k") == 10.0);

@@ -258,6 +258,18 @@ TypeRegistry::_store()
     map[std::type_index(typeid(int64_t))] =
       [](const std::string & s, const Node * n) -> std::any { return parse_int(s, n); };
 
+    map[std::type_index(typeid(std::size_t))] =
+      [](const std::string & s, const Node * n) -> std::any
+    {
+      int64_t v = parse_int(s, n);
+      if (v < 0)
+        throw Error("'" + s + "' cannot be read as size_t (value is negative)", n);
+      if constexpr (sizeof(std::size_t) < sizeof(int64_t))
+        if (v > static_cast<int64_t>(std::numeric_limits<std::size_t>::max()))
+          throw Error("'" + s + "' overflows size_t", n);
+      return static_cast<std::size_t>(v);
+    };
+
     map[std::type_index(typeid(double))] =
       [](const std::string & s, const Node * n) -> std::any { return parse_double(s, n); };
 
