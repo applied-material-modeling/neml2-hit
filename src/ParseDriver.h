@@ -119,7 +119,27 @@ private:
   // Brace expression nesting counter
   int _brace_depth = 0;
 
+  // Accumulator for unquoted scalar values that may contain ${...} expressions.
+  // Built char-by-char across multiple lexer rules; flushed to _pending on emit.
+  std::string _unquoted_acc;
+  int _unquoted_start_line = 1;
+  int _unquoted_start_col = 1;
+
 public:
+  void begin_unquoted(const char * text, int len)
+  {
+    _unquoted_acc.assign(text, len);
+    _unquoted_start_line = _tok_start_line;
+    _unquoted_start_col = _tok_start_col;
+  }
+  void append_unquoted(const char * text, int len) { _unquoted_acc.append(text, len); }
+  void flush_unquoted()
+  {
+    _pending = std::move(_unquoted_acc);
+    _tok_start_line = _unquoted_start_line;
+    _tok_start_col = _unquoted_start_col;
+  }
+
   // True when whitespace was skipped since the last array element token;
   // read and cleared by the grammar to decide whether to insert a space
   // in the reconstructed raw array value.

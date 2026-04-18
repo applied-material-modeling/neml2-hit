@@ -14,6 +14,8 @@ typedef nmhit_detail::ParseDriver HIT_Driver;
 #define TOK(t)   return nmhit_detail::Parser::token::t
 #define TOK_S(t) do { DRIVER->set_pending(yytext, yyleng); \
                       return nmhit_detail::Parser::token::t; } while(0)
+#define TOK_UNQUOTED do { DRIVER->flush_unquoted(); \
+                          return nmhit_detail::Parser::token::TOK_UNQUOTED_STR; } while(0)
 %}
 
 %option noyywrap nounput noinput
@@ -22,7 +24,7 @@ typedef nmhit_detail::ParseDriver HIT_Driver;
 %option extra-type="HIT_Driver *"
 
 %s SECTION_BODY IN_PARAM
-%x IN_PATH AFTER_EQ IN_ARRAY IN_DARRAY IN_BRACE IN_ARRAY_BRACE IN_DARRAY_BRACE IN_INCLUDE
+%x IN_PATH AFTER_EQ IN_ARRAY IN_DARRAY IN_UNQUOTED IN_UBRACE IN_ARRAY_BRACE IN_DARRAY_BRACE IN_INCLUDE
 
 SIGN       [+\-]
 DIGIT      [0-9]
@@ -63,21 +65,20 @@ COMMENT    #[^\n]*
 <AFTER_EQ>{INTEGER}                        { BEGIN(SECTION_BODY); TOK_S(TOK_INTEGER); }
 <AFTER_EQ>"\""                             { DRIVER->_ws_pending = false; BEGIN(IN_DARRAY); TOK(TOK_SINGLE_QUOTE); }
 <AFTER_EQ>"'"                              { DRIVER->_ws_pending = false; BEGIN(IN_ARRAY); TOK(TOK_SINGLE_QUOTE); }
-<AFTER_EQ>"${"                             { DRIVER->begin_brace(); yymore(); BEGIN(IN_BRACE); }
-<AFTER_EQ>[^ \t\n\r\[#$'"\\]+             { BEGIN(SECTION_BODY); TOK_S(TOK_UNQUOTED_STR); }
+<AFTER_EQ>"${"                             { DRIVER->begin_unquoted(yytext, yyleng); DRIVER->begin_brace(); BEGIN(IN_UBRACE); }
+<AFTER_EQ>[^ \t\n\r\[#$'"\\]+             { DRIVER->begin_unquoted(yytext, yyleng); BEGIN(IN_UNQUOTED); }
 <AFTER_EQ>.                                { DRIVER->lex_error(yytext, yylineno); BEGIN(SECTION_BODY); }
 
-<IN_BRACE>"${"                             { DRIVER->begin_brace(); yymore(); }
-<IN_BRACE>"}"                              {
-    if (DRIVER->end_brace()) {
-        BEGIN(SECTION_BODY);
-        TOK_S(TOK_BRACE_EXPR);
-    } else {
-        yymore();
-    }
-}
-<IN_BRACE>[^$}]+                           { yymore(); }
-<IN_BRACE>"$"[^{]                          { yymore(); }
+<IN_UNQUOTED>[^ \t\n\r\[#$'"\\]+          { DRIVER->append_unquoted(yytext, yyleng); }
+<IN_UNQUOTED>"${"                          { DRIVER->begin_brace(); DRIVER->append_unquoted(yytext, yyleng); BEGIN(IN_UBRACE); }
+<IN_UNQUOTED>.                             { yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
+<IN_UNQUOTED>\n                            { yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
+<IN_UNQUOTED><<EOF>>                       { BEGIN(SECTION_BODY); TOK_UNQUOTED; }
+
+<IN_UBRACE>"${"                            { DRIVER->begin_brace(); DRIVER->append_unquoted(yytext, yyleng); }
+<IN_UBRACE>"}"                             { DRIVER->append_unquoted(yytext, yyleng); if (DRIVER->end_brace()) BEGIN(IN_UNQUOTED); }
+<IN_UBRACE>[^$}]+                          { DRIVER->append_unquoted(yytext, yyleng); }
+<IN_UBRACE>"$"[^{]                         { DRIVER->append_unquoted(yytext, yyleng); }
 
 <IN_ARRAY>[ \t\n\r]+                       { DRIVER->_ws_pending = true; }
 <IN_ARRAY>"'"                              { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }

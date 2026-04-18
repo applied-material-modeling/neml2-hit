@@ -366,6 +366,18 @@ main()
     EXPECT(root->param<std::string>("b") == "(7)");
   });
 
+  run("brace_in_unquoted_string", []() {
+    // Brace expression embedded in an unquoted value (no surrounding quotes).
+    auto root = p("a = 7\nb = (${a})");
+    EXPECT(root->param<std::string>("b") == "(7)");
+  });
+
+  run("brace_in_unquoted_leading", []() {
+    // Brace expression at the start of an unquoted value, followed by literal.
+    auto root = p("x = hello\ny = ${x}_world");
+    EXPECT(root->param<std::string>("y") == "hello_world");
+  });
+
   // ── 9. fullpath / find ────────────────────────────────────────────────────
 
   run("fullpath", []() {
