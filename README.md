@@ -446,18 +446,39 @@ try {
 
 ### Requirements
 
-| Tool | Minimum version |
-|------|----------------|
-| CMake | 3.20 |
-| C++ compiler | C++17 |
-| Flex | 2.6 |
-| Bison | 3.7 |
+| Tool | Minimum version | When required |
+|------|----------------|---------------|
+| CMake | 3.20 | Always |
+| C++ compiler | C++17 | Always |
+| Flex | 2.6 | Debug builds only |
+| Bison | 3.7 | Debug builds only |
+
+Pre-generated parser/lexer sources are committed to `generated/` and used
+automatically for non-Debug build types, so end users and CI release builds do
+not need flex or bison installed.
 
 ### Configure and build
 
+**Release build** (no flex or bison required — uses committed generated sources):
+
 ```bash
-cmake -S . -B build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
+```
+
+**Debug build** (requires flex ≥ 2.6 and bison ≥ 3.7 — regenerates parser/lexer from source):
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build -j$(nproc)
+```
+
+After modifying `src/Lexer.l` or `src/Parser.y`, run the helper target to refresh
+the committed sources in `generated/` and then commit them:
+
+```bash
+cmake --build build --target update_generated
+git add generated/ && git commit
 ```
 
 Pass `-DNMHIT_BUILD_TESTS=OFF` to skip building the test executable.
