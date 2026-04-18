@@ -73,18 +73,18 @@ public:
 
   /// Build a Section node (handling 'a/b/c' path splitting).
   std::unique_ptr<nmhit::Node> build_section(const std::string & path,
-                                           std::vector<std::unique_ptr<nmhit::Node>> items,
-                                           const Parser::location_type & loc);
+                                             std::vector<std::unique_ptr<nmhit::Node>> items,
+                                             const Parser::location_type & loc);
 
   /// Build a Field node (handling 'a/b' path splitting and override flag).
   std::unique_ptr<nmhit::Node> build_field(const std::string & name,
-                                         bool is_override,
-                                         const std::string & raw_value,
-                                         const Parser::location_type & loc);
+                                           bool is_override,
+                                           const std::string & raw_value,
+                                           const Parser::location_type & loc);
 
   /// Build a placeholder Include node; file loading happens in nmhit::parse().
   std::unique_ptr<nmhit::Node> build_include(const std::string & path,
-                                           const Parser::location_type & loc);
+                                             const Parser::location_type & loc);
 
   /// Concatenate array element raw values into a single-quoted string.
   std::string build_array_value(std::vector<std::unique_ptr<nmhit::Node>> elems);
@@ -127,7 +127,6 @@ private:
   std::unique_ptr<nmhit::Node> _root;
   bool _failed = false;
   std::vector<nmhit::ErrorMessage> _errors;
-
 };
 
 } // namespace nmhit_detail

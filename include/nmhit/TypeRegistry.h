@@ -51,32 +51,41 @@ public:
   /// an optional Node pointer for source-location-enriched error messages.
   /// Throws hit::Error if T is already registered.
   template <typename T>
-  static void
-  register_parser(std::function<T(const std::string &, const Node *)> fn)
+  static void register_parser(std::function<T(const std::string &, const Node *)> fn)
   {
     auto & m = _store();
     auto key = std::type_index(typeid(T));
     if (m.count(key))
       _throw_already_registered(typeid(T).name());
-    m[key] = [fn](const std::string & s, const Node * n) -> std::any { return fn(s, n); };
+    m[key] = [fn](const std::string & s, const Node * n) -> std::any {
+      return fn(s, n);
+    };
   }
 
   /// Register a scalar parser for type T (context-unaware convenience overload).
-  /// The source-location context is silently dropped; use the two-argument overload
-  /// if you need to attach file/line information to parse errors.
+  /// Exceptions thrown by the parser are caught and re-thrown as hit::Error with
+  /// source-location context; use the two-argument overload if you want to
+  /// construct the error message yourself with file/line information.
   template <typename T>
-  static void
-  register_parser(std::function<T(const std::string &)> fn)
+  static void register_parser(std::function<T(const std::string &)> fn)
   {
-    register_parser<T>([fn](const std::string & s, const Node *) { return fn(s); });
+    register_parser<T>([fn](const std::string & s, const Node * n) -> T {
+      try
+      {
+        return fn(s);
+      }
+      catch (const std::exception & e)
+      {
+        _throw_parse_error(s, typeid(T).name(), e.what(), n);
+      }
+    });
   }
 
   /// Parse raw string as T using the registered parser.
   /// ctx (optional) is passed to the parser for source-location-enriched errors.
   /// Throws hit::Error if T has not been registered.
   template <typename T>
-  static T
-  dispatch(const std::string & raw, const Node * ctx = nullptr)
+  static T dispatch(const std::string & raw, const Node * ctx = nullptr)
   {
     auto & m = _store();
     auto it = m.find(std::type_index(typeid(T)));
@@ -89,6 +98,10 @@ private:
   /// Throws hit::Error — defined in Node.cpp where hit::Error is available.
   static void _throw_unregistered(const char * type_name);
   static void _throw_already_registered(const char * type_name);
+  [[noreturn]] static void _throw_parse_error(const std::string & raw,
+                                              const char * type_name,
+                                              const char * what,
+                                              const Node * ctx);
 
   /// Meyers singleton map — defined in Node.cpp (pre-populated with built-in parsers).
   static std::unordered_map<std::type_index,

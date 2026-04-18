@@ -293,6 +293,15 @@ TypeRegistry::_throw_already_registered(const char * type_name)
               "' is already registered (built-in types cannot be re-registered).");
 }
 
+void
+TypeRegistry::_throw_parse_error(const std::string & raw,
+                                 const char * type_name,
+                                 const char * what,
+                                 const Node * ctx)
+{
+  throw Error("failed to parse '" + raw + "' as type '" + type_name + "': " + what, ctx);
+}
+
 // ── param<T> helpers ─────────────────────────────────────────────────────────
 
 /// Require that n is a Field; throw if not.

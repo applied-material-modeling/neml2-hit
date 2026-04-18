@@ -24,7 +24,7 @@ namespace nmhit
 ///
 /// @throws nmhit::Error if the file cannot be opened or on syntax errors
 std::unique_ptr<Node> parse_file(const std::filesystem::path & fname,
-                                 const std::vector<std::string> & pre  = {},
+                                 const std::vector<std::string> & pre = {},
                                  const std::vector<std::string> & post = {});
 
 /// Parse HIT text from an in-memory string and return the document root.
@@ -38,7 +38,7 @@ std::unique_ptr<Node> parse_file(const std::filesystem::path & fname,
 ///
 /// @throws nmhit::Error on syntax errors
 std::unique_ptr<Node> parse_text(const std::string & input,
-                                 const std::vector<std::string> & pre  = {},
+                                 const std::vector<std::string> & pre = {},
                                  const std::vector<std::string> & post = {});
 
 // ── Scalar value converters ───────────────────────────────────────────────────
@@ -49,9 +49,9 @@ std::unique_ptr<Node> parse_text(const std::string & input,
 // On failure nmhit::Error is thrown.  If @p ctx is non-null it is used to
 // attach file / line / column information to the error message.
 
-bool    parse_bool  (const std::string & s, const Node * ctx = nullptr);
-int64_t parse_int   (const std::string & s, const Node * ctx = nullptr);
-double  parse_double(const std::string & s, const Node * ctx = nullptr);
-float   parse_float (const std::string & s, const Node * ctx = nullptr);
+bool parse_bool(const std::string & s, const Node * ctx = nullptr);
+int64_t parse_int(const std::string & s, const Node * ctx = nullptr);
+double parse_double(const std::string & s, const Node * ctx = nullptr);
+float parse_float(const std::string & s, const Node * ctx = nullptr);
 
 } // namespace nmhit

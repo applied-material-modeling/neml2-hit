@@ -96,8 +96,7 @@ int
 main()
 {
   // Register custom type parser once, before all tests.
-  nmhit::TypeRegistry::register_parser<Color>([](const std::string & s) -> Color
-  {
+  nmhit::TypeRegistry::register_parser<Color>([](const std::string & s) -> Color {
     if (s == "red")
       return Color::Red;
     if (s == "green")
@@ -405,26 +404,19 @@ main()
   run("parse_bool_true", []() { EXPECT(nmhit::parse_bool("true") == true); });
   run("parse_bool_false", []() { EXPECT(nmhit::parse_bool("false") == false); });
   run("parse_bool_quoted", []() { EXPECT(nmhit::parse_bool("'true'") == true); });
-  run("parse_bool_invalid_throws", []() {
-    EXPECT_THROW(nmhit::parse_bool("yes"), nmhit::Error);
-  });
+  run("parse_bool_invalid_throws", []() { EXPECT_THROW(nmhit::parse_bool("yes"), nmhit::Error); });
 
   run("parse_int_positive", []() { EXPECT(nmhit::parse_int("42") == int64_t{42}); });
   run("parse_int_negative", []() { EXPECT(nmhit::parse_int("-7") == int64_t{-7}); });
   run("parse_int_quoted", []() { EXPECT(nmhit::parse_int("'10'") == int64_t{10}); });
-  run("parse_int_invalid_throws", []() {
-    EXPECT_THROW(nmhit::parse_int("3.14"), nmhit::Error);
-  });
+  run("parse_int_invalid_throws", []() { EXPECT_THROW(nmhit::parse_int("3.14"), nmhit::Error); });
 
   run("parse_double_value", []() { EXPECT(nmhit::parse_double("3.14") == 3.14); });
   run("parse_double_scientific", []() { EXPECT(nmhit::parse_double("1e3") == 1000.0); });
-  run("parse_double_invalid_throws", []() {
-    EXPECT_THROW(nmhit::parse_double("abc"), nmhit::Error);
-  });
+  run("parse_double_invalid_throws",
+      []() { EXPECT_THROW(nmhit::parse_double("abc"), nmhit::Error); });
 
-  run("parse_float_value", []() {
-    EXPECT(nmhit::parse_float("1.5") == 1.5f);
-  });
+  run("parse_float_value", []() { EXPECT(nmhit::parse_float("1.5") == 1.5f); });
 
   // ── 12. Misc value types ──────────────────────────────────────────────────
 
@@ -529,13 +521,10 @@ main()
 
   // ── 15. Duplicate field detection ─────────────────────────────────────────
 
-  run("duplicate_field_error", []() {
-    EXPECT_THROW(p("k = 1\nk = 2"), nmhit::Error);
-  });
+  run("duplicate_field_error", []() { EXPECT_THROW(p("k = 1\nk = 2"), nmhit::Error); });
 
-  run("duplicate_field_in_section", []() {
-    EXPECT_THROW(p("[s]\n  k = 1\n  k = 2\n[]"), nmhit::Error);
-  });
+  run("duplicate_field_in_section",
+      []() { EXPECT_THROW(p("[s]\n  k = 1\n  k = 2\n[]"), nmhit::Error); });
 
   run("override_allows_duplicate", []() {
     // ':=' replaces the original value; only the override remains.
@@ -550,9 +539,8 @@ main()
   });
 
   run("builtin_reregistration_throws", []() {
-    EXPECT_THROW(
-      nmhit::TypeRegistry::register_parser<int>([](const std::string &) { return 42; }),
-      nmhit::Error);
+    EXPECT_THROW(nmhit::TypeRegistry::register_parser<int>([](const std::string &) { return 42; }),
+                 nmhit::Error);
   });
 
   // ── 16. pre/post string arguments ─────────────────────────────────────────
@@ -583,14 +571,16 @@ main()
   });
 
   run("parse_file_reads_from_disk", []() {
-    { std::ofstream f(g_test_file); f << "x = 7\n"; }
+    {
+      std::ofstream f(g_test_file);
+      f << "x = 7\n";
+    }
     auto root = nmhit::parse_file(g_test_file);
     EXPECT(root->param<int>("x") == 7);
   });
 
-  run("parse_file_missing_throws", []() {
-    EXPECT_THROW(nmhit::parse_file("/nonexistent/path/file.i"), nmhit::Error);
-  });
+  run("parse_file_missing_throws",
+      []() { EXPECT_THROW(nmhit::parse_file("/nonexistent/path/file.i"), nmhit::Error); });
 
   // ── Summary ───────────────────────────────────────────────────────────────
 
