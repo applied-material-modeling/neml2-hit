@@ -360,6 +360,12 @@ main()
     EXPECT(v[0] == 1 && v[1] == 10 && v[2] == 3);
   });
 
+  run("brace_no_extra_whitespace", []() {
+    // Substitution must not pad the expanded value with surrounding spaces.
+    auto root = p("a = 7\nb = '(${a})'");
+    EXPECT(root->param<std::string>("b") == "(7)");
+  });
+
   // ── 9. fullpath / find ────────────────────────────────────────────────────
 
   run("fullpath", []() {

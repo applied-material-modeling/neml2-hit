@@ -119,6 +119,14 @@ private:
   // Brace expression nesting counter
   int _brace_depth = 0;
 
+public:
+  // True when whitespace was skipped since the last array element token;
+  // read and cleared by the grammar to decide whether to insert a space
+  // in the reconstructed raw array value.
+  bool _ws_pending = false;
+
+private:
+
   // Set of Field nodes constructed with the ':=' operator.
   // Populated in build_field(); consulted in apply_overrides().
   std::unordered_set<const nmhit::Field *> _override_fields;

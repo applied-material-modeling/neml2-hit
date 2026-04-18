@@ -61,8 +61,8 @@ COMMENT    #[^\n]*
 <AFTER_EQ>\n                               { BEGIN(SECTION_BODY); }
 <AFTER_EQ>{FLOAT}                           { BEGIN(SECTION_BODY); TOK_S(TOK_FLOAT); }
 <AFTER_EQ>{INTEGER}                        { BEGIN(SECTION_BODY); TOK_S(TOK_INTEGER); }
-<AFTER_EQ>"\""                             { BEGIN(IN_DARRAY); TOK(TOK_SINGLE_QUOTE); }
-<AFTER_EQ>"'"                              { BEGIN(IN_ARRAY); TOK(TOK_SINGLE_QUOTE); }
+<AFTER_EQ>"\""                             { DRIVER->_ws_pending = false; BEGIN(IN_DARRAY); TOK(TOK_SINGLE_QUOTE); }
+<AFTER_EQ>"'"                              { DRIVER->_ws_pending = false; BEGIN(IN_ARRAY); TOK(TOK_SINGLE_QUOTE); }
 <AFTER_EQ>"${"                             { DRIVER->begin_brace(); yymore(); BEGIN(IN_BRACE); }
 <AFTER_EQ>[^ \t\n\r\[#$'"\\]+             { BEGIN(SECTION_BODY); TOK_S(TOK_UNQUOTED_STR); }
 <AFTER_EQ>.                                { DRIVER->lex_error(yytext, yylineno); BEGIN(SECTION_BODY); }
@@ -79,7 +79,7 @@ COMMENT    #[^\n]*
 <IN_BRACE>[^$}]+                           { yymore(); }
 <IN_BRACE>"$"[^{]                          { yymore(); }
 
-<IN_ARRAY>[ \t\n\r]+                       { /* skip */ }
+<IN_ARRAY>[ \t\n\r]+                       { DRIVER->_ws_pending = true; }
 <IN_ARRAY>"'"                              { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 <IN_ARRAY>";"                              { TOK(TOK_SEMICOLON); }
 <IN_ARRAY>"${"                             { DRIVER->begin_brace(); yymore(); BEGIN(IN_ARRAY_BRACE); }
@@ -100,7 +100,7 @@ COMMENT    #[^\n]*
 <IN_ARRAY_BRACE>[^$}]+                     { yymore(); }
 <IN_ARRAY_BRACE>"$"[^{]                    { yymore(); }
 
-<IN_DARRAY>[ \t\n\r]+                      { /* skip */ }
+<IN_DARRAY>[ \t\n\r]+                      { DRIVER->_ws_pending = true; }
 <IN_DARRAY>"\""                            { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 <IN_DARRAY>";"                             { TOK(TOK_SEMICOLON); }
 <IN_DARRAY>"${"                            { DRIVER->begin_brace(); yymore(); BEGIN(IN_DARRAY_BRACE); }
