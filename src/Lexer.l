@@ -9,7 +9,7 @@
 typedef nmhit_detail::ParseDriver HIT_Driver;
 #define DRIVER  ((HIT_Driver *)yyextra)
 
-#define YY_USER_ACTION  DRIVER->on_token_begin(); DRIVER->on_token_text(yytext, yyleng);
+#define YY_USER_ACTION  DRIVER->on_token_action(yytext, yyleng);
 
 #define TOK(t)   return nmhit_detail::Parser::token::t
 #define TOK_S(t) do { DRIVER->set_pending(yytext, yyleng); \
@@ -71,8 +71,8 @@ COMMENT    #[^\n]*
 
 <IN_UNQUOTED>[^ \t\n\r\[#$'"\\]+          { DRIVER->append_unquoted(yytext, yyleng); }
 <IN_UNQUOTED>"${"                          { DRIVER->begin_brace(); DRIVER->append_unquoted(yytext, yyleng); BEGIN(IN_UBRACE); }
-<IN_UNQUOTED>.                             { yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
-<IN_UNQUOTED>\n                            { yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
+<IN_UNQUOTED>.                             { DRIVER->on_yyless_all(); yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
+<IN_UNQUOTED>\n                            { DRIVER->on_yyless_all(); yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
 <IN_UNQUOTED><<EOF>>                       { BEGIN(SECTION_BODY); TOK_UNQUOTED; }
 
 <IN_UBRACE>"${"                            { DRIVER->begin_brace(); DRIVER->append_unquoted(yytext, yyleng); }
@@ -83,44 +83,44 @@ COMMENT    #[^\n]*
 <IN_ARRAY>[ \t\n\r]+                       { DRIVER->_ws_pending = true; }
 <IN_ARRAY>"'"                              { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 <IN_ARRAY>";"                              { TOK(TOK_SEMICOLON); }
-<IN_ARRAY>"${"                             { DRIVER->begin_brace(); yymore(); BEGIN(IN_ARRAY_BRACE); }
+<IN_ARRAY>"${"                             { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_ARRAY_BRACE); }
 <IN_ARRAY>{FLOAT}                           { TOK_S(TOK_FLOAT); }
 <IN_ARRAY>{INTEGER}                        { TOK_S(TOK_INTEGER); }
 <IN_ARRAY>[^ \t\n\r;#$'"\\]+              { TOK_S(TOK_ARRAY_ELEM); }
 <IN_ARRAY>.                                { DRIVER->lex_error(yytext, yylineno); }
 
-<IN_ARRAY_BRACE>"${"                       { DRIVER->begin_brace(); yymore(); }
+<IN_ARRAY_BRACE>"${"                       { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); }
 <IN_ARRAY_BRACE>"}"                        {
     if (DRIVER->end_brace()) {
         BEGIN(IN_ARRAY);
         TOK_S(TOK_BRACE_EXPR);
     } else {
-        yymore();
+        DRIVER->set_yymore(); yymore();
     }
 }
-<IN_ARRAY_BRACE>[^$}]+                     { yymore(); }
-<IN_ARRAY_BRACE>"$"[^{]                    { yymore(); }
+<IN_ARRAY_BRACE>[^$}]+                     { DRIVER->set_yymore(); yymore(); }
+<IN_ARRAY_BRACE>"$"[^{]                    { DRIVER->set_yymore(); yymore(); }
 
 <IN_DARRAY>[ \t\n\r]+                      { DRIVER->_ws_pending = true; }
 <IN_DARRAY>"\""                            { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 <IN_DARRAY>";"                             { TOK(TOK_SEMICOLON); }
-<IN_DARRAY>"${"                            { DRIVER->begin_brace(); yymore(); BEGIN(IN_DARRAY_BRACE); }
+<IN_DARRAY>"${"                            { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_DARRAY_BRACE); }
 <IN_DARRAY>{FLOAT}                          { TOK_S(TOK_FLOAT); }
 <IN_DARRAY>{INTEGER}                       { TOK_S(TOK_INTEGER); }
 <IN_DARRAY>[^ \t\n\r;#$'"\\]+             { TOK_S(TOK_ARRAY_ELEM); }
 <IN_DARRAY>.                               { DRIVER->lex_error(yytext, yylineno); }
 
-<IN_DARRAY_BRACE>"${"                      { DRIVER->begin_brace(); yymore(); }
+<IN_DARRAY_BRACE>"${"                      { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); }
 <IN_DARRAY_BRACE>"}"                       {
     if (DRIVER->end_brace()) {
         BEGIN(IN_DARRAY);
         TOK_S(TOK_BRACE_EXPR);
     } else {
-        yymore();
+        DRIVER->set_yymore(); yymore();
     }
 }
-<IN_DARRAY_BRACE>[^$}]+                    { yymore(); }
-<IN_DARRAY_BRACE>"$"[^{]                   { yymore(); }
+<IN_DARRAY_BRACE>[^$}]+                    { DRIVER->set_yymore(); yymore(); }
+<IN_DARRAY_BRACE>"$"[^{]                   { DRIVER->set_yymore(); yymore(); }
 
 <IN_INCLUDE>[ \t]+                         { /* skip */ }
 <IN_INCLUDE>[^ \t\n\r#][^\n\r#]*          {

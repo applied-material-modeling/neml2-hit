@@ -600,6 +600,90 @@ main()
   run("parse_file_missing_throws",
       []() { EXPECT_THROW(nmhit::parse_file("/nonexistent/path/file.i"), nmhit::Error); });
 
+  // ── 17. Line number tracking ──────────────────────────────────────────────
+
+  run("line_numbers_unquoted_scalar", []() {
+    // yyless(0) in <IN_UNQUOTED> used to double-count the terminating character,
+    // shifting all subsequent line numbers up by one per unquoted-string field.
+    auto root = p("a = hello\nb = world\nc = 3");
+    EXPECT(root->find("a")->line() == 1);
+    EXPECT(root->find("b")->line() == 2);
+    EXPECT(root->find("c")->line() == 3);
+  });
+
+  run("line_numbers_sections_and_fields", []() {
+    const std::string input = "[Foo]\n"        // 1
+                              "  type = Bar\n" // 2
+                              "  x = 1\n"      // 3
+                              "[]\n"           // 4
+                              "[Baz]\n"        // 5
+                              "  type = Qux\n" // 6
+                              "[]";            // 7
+    auto root = p(input);
+    EXPECT(root->find("Foo")->line() == 1);
+    EXPECT(root->find("Foo/type")->line() == 2);
+    EXPECT(root->find("Foo/x")->line() == 3);
+    EXPECT(root->find("Baz")->line() == 5);
+    EXPECT(root->find("Baz/type")->line() == 6);
+  });
+
+  run("line_numbers_with_brace_expr", []() {
+    // Unquoted brace expressions also go through IN_UNQUOTED and must not
+    // corrupt subsequent line numbers.
+    auto root = p("a = ${x}\nb = hello\nc = 3");
+    EXPECT(root->find("a")->line() == 1);
+    EXPECT(root->find("b")->line() == 2);
+    EXPECT(root->find("c")->line() == 3);
+  });
+
+  run("line_numbers_multiline_array", []() {
+    // Multiline double-quoted array: field location must point to the opening line.
+    const std::string input = "models = \"foo\n" // 1
+                              "         bar\"\n" // 2
+                              "x = 1";           // 3
+    auto root = p(input);
+    EXPECT(root->find("models")->line() == 1);
+    EXPECT(root->find("x")->line() == 3);
+  });
+
+  run("line_numbers_brace_expr_multiline_in_array", []() {
+    // A ${...} spanning multiple lines inside a quoted array: the token start
+    // line must remain at the opening '$', not drift to a later continuation.
+    const std::string input = "a = '${foo\n" // 1  — brace expr starts here
+                              "bar}'\n"      // 2  — brace expr ends here
+                              "b = 1";       // 3
+    auto root = p(input);
+    EXPECT(root->find("a") != nullptr);
+    EXPECT(root->find("b") != nullptr);
+    // Field 'a' is on line 1, 'b' on line 3
+    EXPECT(root->find("a")->line() == 1);
+    EXPECT(root->find("b")->line() == 3);
+  });
+
+  // ── 18. Inline comments next to section headers ───────────────────────────
+
+  run("section_trailing_comment", []() {
+    auto root = p("[foo] # comment\n[]");
+    EXPECT(root->find("foo") != nullptr);
+  });
+
+  run("section_trailing_comment_with_fields", []() {
+    auto root = p("[foo] # a comment\n  k = 1\n[]");
+    EXPECT(root->find("foo/k") != nullptr);
+    EXPECT(root->param<int>("foo/k") == 1);
+  });
+
+  run("nested_section_trailing_comment", []() {
+    auto root = p("[outer]\n  [inner] # nested comment\n  []\n[]");
+    EXPECT(root->find("outer/inner") != nullptr);
+  });
+
+  run("nested_section_trailing_comment_with_fields", []() {
+    auto root = p("[outer] # outer comment\n  [inner] # inner comment\n    v = 7\n  []\n[]");
+    EXPECT(root->find("outer/inner/v") != nullptr);
+    EXPECT(root->param<int>("outer/inner/v") == 7);
+  });
+
   // ── Summary ───────────────────────────────────────────────────────────────
 
   std::cerr << "\n=== Results: " << g_passed << " passed, " << g_failed << " failed ===\n";

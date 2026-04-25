@@ -36,11 +36,10 @@ public:
 
   // ── Interface called by YY_USER_ACTION in Lexer.l ─────────────────────
 
-  /// Record the cursor position at the START of the current token.
-  void on_token_begin();
-
-  /// Advance the tracked cursor position past the matched text.
-  void on_token_text(const char * text, int len);
+  /// Combined token-begin + advance: saves the start position (unless we are
+  /// inside a yymore() continuation) and advances _line/_col only over the
+  /// NEWLY matched portion of yytext.
+  void on_token_action(const char * text, int len);
 
   // ── Interface called from Flex action code ────────────────────────────
 
@@ -55,6 +54,10 @@ public:
   void lex_error(const std::string & msg, int line);
 
   // ── Brace-expression nesting depth ────────────────────────────────────
+
+  // Call this immediately before yymore() to preserve the token start position
+  // across continuation pieces (each one would otherwise overwrite _tok_start_*).
+  void set_yymore() { _in_yymore = true; }
 
   void begin_brace() { ++_brace_depth; }
 
@@ -112,6 +115,12 @@ private:
   int _col = 1;
   int _tok_start_line = 1;
   int _tok_start_col = 1;
+  // Set to true by set_yymore() before a yymore() call so that on_token_action()
+  // does not overwrite _tok_start_line/_tok_start_col for continuation pieces.
+  bool _in_yymore = false;
+  // Accumulated yytext length already processed by on_token_action(); reset to
+  // zero on each fresh (non-yymore) token so only the new portion is counted.
+  int _yymore_base = 0;
 
   // Pending string value for the current token
   std::string _pending;
@@ -140,13 +149,20 @@ public:
     _tok_start_col = _unquoted_start_col;
   }
 
+  // Call this immediately before yyless(0) to undo the on_token_text() advance
+  // for the character being pushed back, preventing it from being counted twice.
+  void on_yyless_all()
+  {
+    _line = _tok_start_line;
+    _col = _tok_start_col;
+  }
+
   // True when whitespace was skipped since the last array element token;
   // read and cleared by the grammar to decide whether to insert a space
   // in the reconstructed raw array value.
   bool _ws_pending = false;
 
 private:
-
   // Set of Field nodes constructed with the ':=' operator.
   // Populated in build_field(); consulted in apply_overrides().
   std::unordered_set<const nmhit::Field *> _override_fields;

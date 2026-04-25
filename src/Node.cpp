@@ -606,16 +606,18 @@ ParseDriver::~ParseDriver()
 // ── Location tracking ─────────────────────────────────────────────────────────
 
 void
-ParseDriver::on_token_begin()
+ParseDriver::on_token_action(const char * text, int len)
 {
-  _tok_start_line = _line;
-  _tok_start_col = _col;
-}
+  if (!_in_yymore)
+  {
+    _tok_start_line = _line;
+    _tok_start_col = _col;
+    _yymore_base = 0;
+  }
+  _in_yymore = false;
 
-void
-ParseDriver::on_token_text(const char * text, int len)
-{
-  for (int i = 0; i < len; ++i)
+  // Advance only over the newly matched portion (text[_yymore_base..len-1]).
+  for (int i = _yymore_base; i < len; ++i)
   {
     if (text[i] == '\n')
     {
@@ -627,6 +629,7 @@ ParseDriver::on_token_text(const char * text, int len)
       ++_col;
     }
   }
+  _yymore_base = len;
 }
 
 // ── lex() — called by the Bison parser ───────────────────────────────────────

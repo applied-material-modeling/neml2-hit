@@ -835,7 +835,7 @@ static const flex_int16_t yy_chk[618] =
 typedef nmhit_detail::ParseDriver HIT_Driver;
 #define DRIVER  ((HIT_Driver *)yyextra)
 
-#define YY_USER_ACTION  DRIVER->on_token_begin(); DRIVER->on_token_text(yytext, yyleng);
+#define YY_USER_ACTION  DRIVER->on_token_action(yytext, yyleng);
 
 #define TOK(t)   return nmhit_detail::Parser::token::t
 #define TOK_S(t) do { DRIVER->set_pending(yytext, yyleng); \
@@ -1337,13 +1337,13 @@ YY_RULE_SETUP
 case 32:
 YY_RULE_SETUP
 #line 74 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
+{ DRIVER->on_yyless_all(); yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
 #line 75 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
+{ DRIVER->on_yyless_all(); yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
 	YY_BREAK
 case YY_STATE_EOF(IN_UNQUOTED):
 #line 76 "/home/gary/projects/neml2-hit/src/Lexer.l"
@@ -1390,7 +1390,7 @@ YY_RULE_SETUP
 case 41:
 YY_RULE_SETUP
 #line 86 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ DRIVER->begin_brace(); yymore(); BEGIN(IN_ARRAY_BRACE); }
+{ DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_ARRAY_BRACE); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
@@ -1415,7 +1415,7 @@ YY_RULE_SETUP
 case 46:
 YY_RULE_SETUP
 #line 92 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ DRIVER->begin_brace(); yymore(); }
+{ DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
@@ -1425,7 +1425,7 @@ YY_RULE_SETUP
         BEGIN(IN_ARRAY);
         TOK_S(TOK_BRACE_EXPR);
     } else {
-        yymore();
+        DRIVER->set_yymore(); yymore();
     }
 }
 	YY_BREAK
@@ -1433,13 +1433,13 @@ case 48:
 /* rule 48 can match eol */
 YY_RULE_SETUP
 #line 101 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ yymore(); }
+{ DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 49:
 /* rule 49 can match eol */
 YY_RULE_SETUP
 #line 102 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ yymore(); }
+{ DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 50:
 /* rule 50 can match eol */
@@ -1460,7 +1460,7 @@ YY_RULE_SETUP
 case 53:
 YY_RULE_SETUP
 #line 107 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ DRIVER->begin_brace(); yymore(); BEGIN(IN_DARRAY_BRACE); }
+{ DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_DARRAY_BRACE); }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
@@ -1485,7 +1485,7 @@ YY_RULE_SETUP
 case 58:
 YY_RULE_SETUP
 #line 113 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ DRIVER->begin_brace(); yymore(); }
+{ DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
@@ -1495,7 +1495,7 @@ YY_RULE_SETUP
         BEGIN(IN_DARRAY);
         TOK_S(TOK_BRACE_EXPR);
     } else {
-        yymore();
+        DRIVER->set_yymore(); yymore();
     }
 }
 	YY_BREAK
@@ -1503,13 +1503,13 @@ case 60:
 /* rule 60 can match eol */
 YY_RULE_SETUP
 #line 122 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ yymore(); }
+{ DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 61:
 /* rule 61 can match eol */
 YY_RULE_SETUP
 #line 123 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ yymore(); }
+{ DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
