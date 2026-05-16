@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.26)
 project(neml2-hit VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -148,7 +148,7 @@ endif()
 
 option(NMHIT_BUILD_PYTHON "Build Python bindings via nanobind" OFF)
 if(NMHIT_BUILD_PYTHON)
-  find_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development.Module)
+  find_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development.Module Development.SABIModule)
 
   # Locate nanobind's CMake integration through the Python interpreter.
   # scikit-build-core installs nanobind into the build venv so it is findable
