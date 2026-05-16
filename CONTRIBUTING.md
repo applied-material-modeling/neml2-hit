@@ -25,7 +25,10 @@ pip install -e . --no-build-isolation -v        # editable install
 pytest python/tests/ -v                         # run Python tests
 ```
 
-`--no-build-isolation` reuses the CMake build that is already on disk.
+`--no-build-isolation` skips the PEP 517 build venv and uses the already-installed
+`scikit-build-core` and `nanobind` packages directly, which avoids re-downloading them.
+scikit-build-core places its own CMake build in `_skbuild/` (separate from any `build/`
+you may have created for C++ development).
 Re-run `pip install -e . --no-build-isolation -v` whenever you change the C++ binding source.
 
 ### 3. Install the pre-commit hook

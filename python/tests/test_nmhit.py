@@ -278,6 +278,12 @@ def test_remove_child_missing():
         root.remove_child("nonexistent")
 
 
+def test_remove_child_empty_relpath():
+    root = nmhit.parse_text("k = 42")
+    with pytest.raises(nmhit.Error):
+        root.remove_child("")
+
+
 # ── error handling ────────────────────────────────────────────────────────────
 
 def test_error_on_missing_section_close():

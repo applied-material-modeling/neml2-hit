@@ -116,13 +116,16 @@ NB_MODULE(_nmhit, m)
       if (inst)
       {
         PyObject * msgs = PyList_New(0);
-        for (auto msg : e.messages) // copy by value for move into cast
+        if (msgs)
         {
-          nb::object py_msg = nb::cast(std::move(msg));
-          PyList_Append(msgs, py_msg.ptr());
+          for (auto msg : e.messages) // copy by value for move into cast
+          {
+            nb::object py_msg = nb::cast(std::move(msg));
+            PyList_Append(msgs, py_msg.ptr());
+          }
+          PyObject_SetAttrString(inst, "messages", msgs);
+          Py_DECREF(msgs);
         }
-        PyObject_SetAttrString(inst, "messages", msgs);
-        Py_DECREF(msgs);
         PyErr_SetObject(_error_type, inst);
         Py_DECREF(inst);
       }
@@ -293,6 +296,8 @@ NB_MODULE(_nmhit, m)
     .def(
       "remove_child",
       [](Node & parent, const std::string & relpath) -> std::unique_ptr<Node> {
+        if (relpath.empty())
+          throw nmhit::Error("remove_child: relpath must not be empty");
         Node * child = parent.find(relpath);
         if (!child)
           throw nmhit::Error("remove_child: no node at path '" + relpath + "'");
