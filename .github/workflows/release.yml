@@ -13,13 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up QEMU (Linux arm64 cross-build)
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-24.04'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
@@ -45,7 +45,7 @@ jobs:
   # ── Build source distribution ─────────────────────────────────────────────────
   build-sdist:
     name: "Source distribution"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -67,7 +67,7 @@ jobs:
   publish:
     name: "Publish to PyPI"
     needs: [build-wheels, build-sdist]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     environment:
       name: pypi
       url: https://pypi.org/p/nmhit
