@@ -48,7 +48,7 @@ jobs:
       - name: Build wheel (native arch)
         uses: pypa/cibuildwheel@v2.19
         env:
-          CIBW_BUILD: "cp39-* cp312-*"
+          CIBW_BUILD: "cp39-* cp313-*"
           CIBW_SKIP:  "*-musllinux* *-manylinux_i686"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_MACOS: "native"
