@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.20)
 project(neml2-hit VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -148,7 +148,13 @@ endif()
 
 option(NMHIT_BUILD_PYTHON "Build Python bindings via nanobind" OFF)
 if(NMHIT_BUILD_PYTHON)
-  find_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development.Module Development.SABIModule)
+  # Per-version wheels: only Development.Module is needed here.
+  # When Python 3.12 becomes the project minimum, switch to a single abi3 wheel:
+  #   - set wheel.py-api = "cp312" in pyproject.toml
+  #   - add Development.SABIModule to this find_package call (requires CMake >= 3.26)
+  #   - add STABLE_ABI back to nanobind_add_module below
+  # nanobind's STABLE_ABI silently no-ops below Python 3.12 (Py_LIMITED_API=0x030C0000).
+  find_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development.Module)
 
   # Locate nanobind's CMake integration through the Python interpreter.
   # scikit-build-core installs nanobind into the build venv so it is findable
@@ -168,7 +174,6 @@ if(NMHIT_BUILD_PYTHON)
 
   nanobind_add_module(
     _nmhit
-    STABLE_ABI  # Py_LIMITED_API=0x03090000: one .so covers Python 3.9+
     NB_STATIC   # embed nanobind runtime; wheel is self-contained
     python/src/_nmhit.cpp
   )

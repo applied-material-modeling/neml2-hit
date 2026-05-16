@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nmhit"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python bindings for the nmhit NEML2-flavored HIT parser"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -22,11 +22,14 @@ dev = ["pytest>=7"]
 cmake.build-type = "Release"
 cmake.args = ["-DNMHIT_BUILD_TESTS=OFF", "-DNMHIT_BUILD_PYTHON=ON", "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"]
 wheel.packages = ["python/nmhit"]
-wheel.py-api = "cp39"   # triggers abi3 wheel tag to match STABLE_ABI in CMake
+# Per-version wheels: one wheel per CPython release.
+# When Python 3.12 becomes the project minimum, switch to a single abi3 wheel:
+#   set wheel.py-api = "cp312" and build = "cp312-*".
+# nanobind's STABLE_ABI requires Py_LIMITED_API >= 0x030C0000 (3.12); it silently
+# no-ops on earlier Pythons, so cp39-abi3 would still produce a cpython-39 suffix.
 
-# STABLE_ABI: one abi3 wheel per platform covers Python 3.9+
 [tool.cibuildwheel]
-build = "cp39-*"
+build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
 skip = "*-musllinux* *-manylinux_i686"
 test-requires = ["pytest"]
 test-command = "pytest {project}/python/tests/ -v"
