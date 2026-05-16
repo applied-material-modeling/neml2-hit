@@ -4,4 +4,4 @@ repos:
     hooks:
       - id: clang-format
         # Only format hand-written C++ — skip generated/ and Flex/Bison sources.
-        files: ^(src/|include/|tests/).+\.(cpp|h)$
+        files: ^(src/|include/|tests/|python/src/).+\.(cpp|h)$

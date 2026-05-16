@@ -26,3 +26,13 @@ CTestTestfile.cmake
 *.swo
 *~
 .DS_Store
+
+# Python packaging
+dist/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyi
+
+# scikit-build-core build directory
+_skbuild/

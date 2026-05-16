@@ -442,6 +442,119 @@ try {
 
 ---
 
+## Python API
+
+### Installation
+
+```bash
+pip install nmhit
+```
+
+Wheels are published to PyPI for Linux (x86\_64, aarch64) and macOS (x86\_64, arm64),
+covering Python 3.9 and later.  No Flex or Bison is required.
+
+### Quick start
+
+```python
+import nmhit
+
+# Parse a file or an in-memory string
+root = nmhit.parse_file("input.i")
+root = nmhit.parse_text("[mesh]\n  dim = 3\n[]")
+
+# Read typed values via slash-separated paths
+dim = root.param_int("mesh/dim")         # int
+tol = root.param_float("solver/tol")     # float
+on  = root.param_bool("output/enabled")  # bool
+tag = root.param_str("type")             # str
+
+# Optional — returns a default when the path is absent
+n = root.param_optional_int("mesh/dim", 3)
+
+# 1-D and 2-D arrays
+vals   = root.param_list_int("vals")           # list[int]
+matrix = root.param_list_list_float("matrix")  # list[list[float]]
+```
+
+`parse_text` and `parse_file` accept optional `pre` and `post` keyword arguments
+(lists of HIT strings) for injecting snippets or command-line overrides:
+
+```python
+root = nmhit.parse_file("input.i", post=["solver/max_iter := 200"])
+```
+
+### Auto-detection with `param()`
+
+`nmhit.param()` infers the type from the raw value (bool → int → float → str)
+and returns a native Python object.  Pass an explicit type as the third argument
+to override inference:
+
+```python
+nmhit.param(root, "mesh/dim")           # → 3  (int)
+nmhit.param(root, "mesh/dim", float)    # → 3.0
+nmhit.param(root, "mesh/dim", str)      # → "3"
+```
+
+### Node types and tree navigation
+
+```python
+root = nmhit.parse_text("[mesh]\n  dim = 3\n[]")
+
+node = root.find("mesh/dim")            # returns Field, or None if absent
+sec  = root.find("mesh")               # returns Section
+
+node.type()      # nmhit.NodeType.Field / .Section / .Root / ...
+node.path()      # "dim"
+node.fullpath()  # "mesh/dim"
+node.line()      # source line number
+
+# Direct children, optionally filtered by type
+root.children()                          # list[Node]
+root.children(nmhit.NodeType.Section)    # list[Section]
+
+# Walk upward
+node.parent()    # parent Node, or None at root
+node.root_node() # the Root node
+```
+
+### Mutation
+
+```python
+# Change a field value in-place
+root.find("mesh/dim").set_val("2")
+
+# Add / insert / remove children (cloned into the tree)
+root.add_child(nmhit.Field("k", "42"))
+root.insert_child(0, nmhit.Field("first", "1"))
+removed = root.remove_child("mesh")    # returns the detached node
+
+# Deep copy
+root2 = root.clone()
+```
+
+### Render
+
+```python
+text = root.render()          # default 2-space indent
+text = root.render(indent_text="    ")
+```
+
+### Errors
+
+All errors raise `nmhit.Error` (a subclass of `RuntimeError`).
+The exception carries a `.messages` attribute — a list of `ErrorMessage` objects
+with `line`, `column`, `message`, and `filename` fields:
+
+```python
+try:
+    nmhit.parse_text("[mesh]\n  dim = 3")   # missing []
+except nmhit.Error as e:
+    for m in e.messages:
+        print(m)   # e.g. "<string>:2:9: expected '[]'"
+```
+
+---
+
 ## Building
 
 ### Requirements

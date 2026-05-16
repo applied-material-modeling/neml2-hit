@@ -14,7 +14,24 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j$(nproc)
 ```
 
-### 2. Install the pre-commit hook
+### 2. Set up the Python bindings (optional)
+
+If you are working on `python/src/_nmhit.cpp` or `python/nmhit/__init__.py`,
+install the package in editable mode after the CMake build:
+
+```bash
+pip install scikit-build-core nanobind pytest   # build deps + test runner
+pip install -e . --no-build-isolation -v        # editable install
+pytest python/tests/ -v                         # run Python tests
+```
+
+`--no-build-isolation` skips the PEP 517 build venv and uses the already-installed
+`scikit-build-core` and `nanobind` packages directly, which avoids re-downloading them.
+scikit-build-core places its own CMake build in `_skbuild/` (separate from any `build/`
+you may have created for C++ development).
+Re-run `pip install -e . --no-build-isolation -v` whenever you change the C++ binding source.
+
+### 3. Install the pre-commit hook
 
 The project uses [pre-commit](https://pre-commit.com) to run `clang-format`
 automatically before every commit.  Install it once after cloning:
@@ -41,8 +58,9 @@ pre-commit run --all-files
 
 ### Editing C++ source only
 
-Make changes to `src/Node.cpp`, `src/BraceExpr.cpp`, `src/ParseDriver.h`, or
-the public headers under `include/`, then rebuild:
+Make changes to `src/Node.cpp`, `src/BraceExpr.cpp`, `src/ParseDriver.h`,
+the public headers under `include/`, or the Python binding source at
+`python/src/_nmhit.cpp`, then rebuild:
 
 ```bash
 cmake --build build -j$(nproc)
@@ -90,5 +108,5 @@ The pre-commit hook applies it automatically; you can also run it by hand:
 
 ```bash
 clang-format -i src/Node.cpp src/BraceExpr.cpp src/ParseDriver.h \
-             include/nmhit/*.h tests/test_hit.cpp
+             include/nmhit/*.h tests/test_hit.cpp python/src/_nmhit.cpp
 ```

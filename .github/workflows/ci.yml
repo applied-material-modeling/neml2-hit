@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Python binding build + test (editable install, fast feedback) ────────────
+  python:
+    name: "Python ${{ matrix.python-version }} / ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+        python-version: ["3.9", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install build and test dependencies
+        run: pip install scikit-build-core nanobind pytest
+
+      - name: Build and install (editable, no isolation)
+        run: pip install -e . --no-build-isolation -v
+
+      - name: Run Python tests
+        run: pytest python/tests/ -v
+
+  # ── Wheel + sdist packaging check (native arch only, no cross-compilation) ───
+  package:
+    name: "Package / ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheel (native arch)
+        uses: pypa/cibuildwheel@v2.19
+        env:
+          CIBW_BUILD: "cp39-*"
+          CIBW_SKIP:  "*-musllinux* *-manylinux_i686"
+          CIBW_ARCHS_LINUX: "x86_64"
+          CIBW_ARCHS_MACOS: "native"
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_TEST_REQUIRES: "pytest"
+          CIBW_TEST_COMMAND:  "pytest {project}/python/tests/ -v"
+
+  # ── Source distribution build check ─────────────────────────────────────────
+  sdist:
+    name: "Source distribution"
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build sdist
+        run: |
+          pip install build
+          python -m build --sdist
+
+  # ── C++ library tests (unmodified by Python changes) ────────────────────────
+  cpp:
+    name: "C++ / ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DNMHIT_BUILD_PYTHON=OFF
+
+      - name: Build
+        run: cmake --build build -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
