@@ -1,0 +1,40 @@
+[build-system]
+requires = ["scikit-build-core>=0.9", "nanobind>=2.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "nmhit"
+version = "0.1.0"
+description = "Python bindings for the nmhit NEML2-flavored HIT parser"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Text Processing :: Markup",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+cmake.args = ["-DNMHIT_BUILD_TESTS=OFF", "-DNMHIT_BUILD_PYTHON=ON", "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"]
+wheel.packages = ["python/nmhit"]
+wheel.py-api = "cp39"   # triggers abi3 wheel tag to match STABLE_ABI in CMake
+
+# STABLE_ABI: one abi3 wheel per platform covers Python 3.9+
+[tool.cibuildwheel]
+build = "cp39-*"
+skip = "*-musllinux* *-manylinux_i686"
+test-requires = ["pytest"]
+test-command = "pytest {project}/python/tests/ -v"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64", "aarch64"]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]

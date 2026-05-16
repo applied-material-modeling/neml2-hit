@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  # ── Build wheels (Linux + macOS) ─────────────────────────────────────────────
+  build-wheels:
+    name: "Wheels / ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU (Linux arm64 cross-build)
+        if: matrix.os == 'ubuntu-22.04'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.19
+        env:
+          # STABLE_ABI: cp39-* produces one abi3 wheel covering Python 3.9+
+          CIBW_BUILD: "cp39-*"
+          CIBW_SKIP:  "*-musllinux* *-manylinux_i686"
+          CIBW_ARCHS_LINUX: "x86_64 aarch64"
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_MANYLINUX_X86_64_IMAGE:  manylinux_2_28
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
+          CIBW_TEST_REQUIRES: "pytest"
+          CIBW_TEST_COMMAND:  "pytest {project}/python/tests/ -v"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+  # ── Build source distribution ─────────────────────────────────────────────────
+  build-sdist:
+    name: "Source distribution"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build sdist
+        run: |
+          pip install build
+          python -m build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  # ── Publish to PyPI via OIDC trusted publishing ───────────────────────────────
+  publish:
+    name: "Publish to PyPI"
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-22.04
+    environment:
+      name: pypi
+      url: https://pypi.org/p/nmhit
+    permissions:
+      id-token: write  # required for OIDC trusted publishing
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          merge-multiple: true
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # No API token needed — configure Trusted Publishing once on pypi.org:
+        # Publisher: GitHub Actions, repo: <owner>/nmhit, workflow: release.yml,
+        # environment: pypi
