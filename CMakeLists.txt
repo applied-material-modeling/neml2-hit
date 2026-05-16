@@ -175,7 +175,7 @@ if(NMHIT_BUILD_PYTHON)
 
   target_link_libraries(_nmhit PRIVATE nmhit)
 
-  # scikit-build-core reads the install destination from pyproject.toml
-  # (wheel.install-dir = "nmhit") and places the module there in the wheel.
+  # Install into the nmhit/ subdirectory inside the wheel.
+  # scikit-build-core picks this up via wheel.packages = ["python/nmhit"].
   install(TARGETS _nmhit DESTINATION nmhit)
 endif()

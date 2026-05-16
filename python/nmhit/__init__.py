@@ -15,7 +15,7 @@ Typical usage::
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Sequence, Union
 
 from ._nmhit import (
     # Exception types
@@ -42,8 +42,8 @@ from ._nmhit import parse_file as _parse_file_cpp
 
 def parse_file(
     path: Union[str, Path],
-    pre: List[str] = (),
-    post: List[str] = (),
+    pre: Sequence[str] = (),
+    post: Sequence[str] = (),
 ) -> Root:
     """Parse a HIT input file and return the document root.
 

@@ -1,7 +1,6 @@
 """Pytest test suite for the nmhit Python bindings."""
 
 import pytest
-from pathlib import Path
 import nmhit
 
 
@@ -264,6 +263,13 @@ def test_remove_child():
     removed = root.remove_child("k")   # pass path string
     assert isinstance(removed, nmhit.Field)
     assert root.find("k") is None
+
+
+def test_remove_child_nested():
+    root = nmhit.parse_text("[s]\n  k = 42\n[]")
+    removed = root.remove_child("s/k")
+    assert isinstance(removed, nmhit.Field)
+    assert root.find("s/k") is None
 
 
 def test_remove_child_missing():
