@@ -684,6 +684,52 @@ main()
     EXPECT(root->param<int>("outer/inner/v") == 7);
   });
 
+  // ── 19. Multiline array whitespace preservation ───────────────────────────
+
+  run("multiline_array_round_trip", []() {
+    // A quoted array with a newline between elements: render() must emit the
+    // newline verbatim so the reconstructed string still spans two lines.
+    const std::string input = "vals = 'a b\n"
+                              "        c d'\n";
+    auto root = p(input);
+    // Semantic content: four elements.
+    auto v = root->param<std::vector<std::string>>("vals");
+    EXPECT(v.size() == 4);
+    EXPECT(v[0] == "a" && v[1] == "b" && v[2] == "c" && v[3] == "d");
+
+    // Round-trip: rendered form must contain a newline inside the quotes.
+    auto rendered = root->render();
+    auto quote_open = rendered.find('\'');
+    auto quote_close = rendered.rfind('\'');
+    EXPECT(quote_open != std::string::npos && quote_close != std::string::npos);
+    auto inside = rendered.substr(quote_open + 1, quote_close - quote_open - 1);
+    EXPECT(inside.find('\n') != std::string::npos);
+
+    // Re-parse the rendered form and verify semantic equivalence.
+    auto root2 = p(rendered);
+    auto v2 = root2->param<std::vector<std::string>>("vals");
+    EXPECT(v2 == v);
+  });
+
+  run("multiline_array_double_quoted_round_trip", []() {
+    const std::string input = "vals = \"x y\n"
+                              "        z w\"\n";
+    auto root = p(input);
+    auto v = root->param<std::vector<std::string>>("vals");
+    EXPECT(v.size() == 4);
+    EXPECT(v[0] == "x" && v[1] == "y" && v[2] == "z" && v[3] == "w");
+
+    auto rendered = root->render();
+    auto root2 = p(rendered);
+    EXPECT(root2->param<std::vector<std::string>>("vals") == v);
+    // Rendered form must preserve the newline inside the array.
+    auto quote_open = rendered.find('\'');
+    auto quote_close = rendered.rfind('\'');
+    EXPECT(quote_open != std::string::npos && quote_close != std::string::npos);
+    EXPECT(rendered.substr(quote_open + 1, quote_close - quote_open - 1).find('\n') !=
+           std::string::npos);
+  });
+
   // ── Summary ───────────────────────────────────────────────────────────────
 
   std::cerr << "\n=== Results: " << g_passed << " passed, " << g_failed << " failed ===\n";

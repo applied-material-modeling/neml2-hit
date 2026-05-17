@@ -2,10 +2,10 @@
 #define HITHEADER_H 1
 #define HITIN_HEADER 1
 
-#line 6 "/home/gary/projects/neml2-hit/build/Lexer.h"
+#line 6 "/home/gary/projects/nmhit/build_regen/Lexer.h"
 #define YY_NO_UNISTD_H
 
-#line 9 "/home/gary/projects/neml2-hit/build/Lexer.h"
+#line 9 "/home/gary/projects/nmhit/build_regen/Lexer.h"
 
 #define  YY_INT_ALIGNED short int
 
@@ -704,9 +704,9 @@ extern int yylex (yyscan_t yyscanner);
 #undef yyTABLES_NAME
 #endif
 
-#line 139 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 139 "/home/gary/projects/nmhit/src/Lexer.l"
 
 
-#line 711 "/home/gary/projects/neml2-hit/build/Lexer.h"
+#line 711 "/home/gary/projects/nmhit/build_regen/Lexer.h"
 #undef HITIN_HEADER
 #endif /* HITHEADER_H */

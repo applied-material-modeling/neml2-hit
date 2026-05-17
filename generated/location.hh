@@ -31,12 +31,12 @@
 // version 2.2 of Bison.
 
 /**
- ** \file /home/gary/projects/neml2-hit/build/location.hh
+ ** \file /home/gary/projects/nmhit/build_regen/location.hh
  ** Define the nmhit_detail::location class.
  */
 
-#ifndef YY_YY_HOME_GARY_PROJECTS_NEML2_HIT_BUILD_LOCATION_HH_INCLUDED
-# define YY_YY_HOME_GARY_PROJECTS_NEML2_HIT_BUILD_LOCATION_HH_INCLUDED
+#ifndef YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_REGEN_LOCATION_HH_INCLUDED
+# define YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_REGEN_LOCATION_HH_INCLUDED
 
 # include <iostream>
 # include <string>
@@ -53,9 +53,9 @@
 #  endif
 # endif
 
-#line 18 "/home/gary/projects/neml2-hit/src/Parser.y"
+#line 18 "/home/gary/projects/nmhit/src/Parser.y"
 namespace nmhit_detail {
-#line 59 "/home/gary/projects/neml2-hit/build/location.hh"
+#line 59 "/home/gary/projects/nmhit/build_regen/location.hh"
 
   /// A point in a source file.
   class position
@@ -299,8 +299,8 @@ namespace nmhit_detail {
     return ostr;
   }
 
-#line 18 "/home/gary/projects/neml2-hit/src/Parser.y"
+#line 18 "/home/gary/projects/nmhit/src/Parser.y"
 } // nmhit_detail
-#line 305 "/home/gary/projects/neml2-hit/build/location.hh"
+#line 305 "/home/gary/projects/nmhit/build_regen/location.hh"
 
-#endif // !YY_YY_HOME_GARY_PROJECTS_NEML2_HIT_BUILD_LOCATION_HH_INCLUDED
+#endif // !YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_REGEN_LOCATION_HH_INCLUDED

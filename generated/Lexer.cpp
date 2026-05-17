@@ -1,7 +1,7 @@
-#line 2 "/home/gary/projects/neml2-hit/build/Lexer.cpp"
+#line 2 "/home/gary/projects/nmhit/build_regen/Lexer.cpp"
 #define YY_NO_UNISTD_H
 
-#line 5 "/home/gary/projects/neml2-hit/build/Lexer.cpp"
+#line 5 "/home/gary/projects/nmhit/build_regen/Lexer.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -826,9 +826,9 @@ static const flex_int16_t yy_chk[618] =
 #define yymore() (yyg->yy_more_flag = 1)
 #define YY_MORE_ADJ yyg->yy_more_len
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 1 "/home/gary/projects/nmhit/src/Lexer.l"
 
-#line 6 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 6 "/home/gary/projects/nmhit/src/Lexer.l"
 #include <string>
 #include "ParseDriver.h"
 
@@ -842,10 +842,10 @@ typedef nmhit_detail::ParseDriver HIT_Driver;
                       return nmhit_detail::Parser::token::t; } while(0)
 #define TOK_UNQUOTED do { DRIVER->flush_unquoted(); \
                           return nmhit_detail::Parser::token::TOK_UNQUOTED_STR; } while(0)
-#line 846 "/home/gary/projects/neml2-hit/build/Lexer.cpp"
+#line 846 "/home/gary/projects/nmhit/build_regen/Lexer.cpp"
 #define YY_NO_INPUT 1
 
-#line 849 "/home/gary/projects/neml2-hit/build/Lexer.cpp"
+#line 849 "/home/gary/projects/nmhit/build_regen/Lexer.cpp"
 
 #define INITIAL 0
 #define SECTION_BODY 1
@@ -1112,10 +1112,10 @@ YY_DECL
 		}
 
 	{
-#line 37 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 37 "/home/gary/projects/nmhit/src/Lexer.l"
 
 
-#line 1119 "/home/gary/projects/neml2-hit/build/Lexer.cpp"
+#line 1119 "/home/gary/projects/nmhit/build_regen/Lexer.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1176,250 +1176,250 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 39 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 39 "/home/gary/projects/nmhit/src/Lexer.l"
 { /* skip */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 40 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 40 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK(TOK_BLANK); }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 41 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 41 "/home/gary/projects/nmhit/src/Lexer.l"
 { /* skip */ }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 42 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 42 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK_S(TOK_COMMENT); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 43 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 43 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(IN_INCLUDE); TOK(TOK_INCLUDE_KW); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 44 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 44 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(INITIAL); TOK(TOK_SECTION_END); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 45 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 45 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(IN_PATH); TOK(TOK_LBRACKET); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 46 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 46 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(IN_PARAM); TOK_S(TOK_IDENT); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 47 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 47 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->lex_error(yytext, yylineno); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 49 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 49 "/home/gary/projects/nmhit/src/Lexer.l"
 { /* skip */ }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 50 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 50 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); return ']'; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 51 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 51 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK_S(TOK_SECTION_PATH); }
 	YY_BREAK
 case 13:
 /* rule 13 can match eol */
 YY_RULE_SETUP
-#line 52 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 52 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->lex_error("newline in section header", yylineno); BEGIN(SECTION_BODY); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 53 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 53 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->lex_error(yytext, yylineno); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 55 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 55 "/home/gary/projects/nmhit/src/Lexer.l"
 { /* skip */ }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 56 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 56 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(AFTER_EQ); TOK(TOK_OVERRIDE); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 57 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 57 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(AFTER_EQ); TOK(TOK_OVERRIDE); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 58 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 58 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(AFTER_EQ); TOK(TOK_ASSIGN); }
 	YY_BREAK
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 59 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 59 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 60 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 60 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->lex_error(yytext, yylineno); BEGIN(SECTION_BODY); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 62 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 62 "/home/gary/projects/nmhit/src/Lexer.l"
 { /* skip */ }
 	YY_BREAK
 case 22:
 /* rule 22 can match eol */
 YY_RULE_SETUP
-#line 63 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 63 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 64 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 64 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); TOK_S(TOK_FLOAT); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 65 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 65 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); TOK_S(TOK_INTEGER); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 66 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ DRIVER->_ws_pending = false; BEGIN(IN_DARRAY); TOK(TOK_SINGLE_QUOTE); }
+#line 66 "/home/gary/projects/nmhit/src/Lexer.l"
+{ DRIVER->_ws_pending.clear(); BEGIN(IN_DARRAY); TOK(TOK_SINGLE_QUOTE); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 67 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ DRIVER->_ws_pending = false; BEGIN(IN_ARRAY); TOK(TOK_SINGLE_QUOTE); }
+#line 67 "/home/gary/projects/nmhit/src/Lexer.l"
+{ DRIVER->_ws_pending.clear(); BEGIN(IN_ARRAY); TOK(TOK_SINGLE_QUOTE); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 68 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 68 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->begin_unquoted(yytext, yyleng); DRIVER->begin_brace(); BEGIN(IN_UBRACE); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 69 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 69 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->begin_unquoted(yytext, yyleng); BEGIN(IN_UNQUOTED); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 70 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 70 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->lex_error(yytext, yylineno); BEGIN(SECTION_BODY); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 72 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 72 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->append_unquoted(yytext, yyleng); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 73 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 73 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->begin_brace(); DRIVER->append_unquoted(yytext, yyleng); BEGIN(IN_UBRACE); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 74 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 74 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->on_yyless_all(); yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
-#line 75 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 75 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->on_yyless_all(); yyless(0); BEGIN(SECTION_BODY); TOK_UNQUOTED; }
 	YY_BREAK
 case YY_STATE_EOF(IN_UNQUOTED):
-#line 76 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 76 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); TOK_UNQUOTED; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 78 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 78 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->begin_brace(); DRIVER->append_unquoted(yytext, yyleng); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 79 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 79 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->append_unquoted(yytext, yyleng); if (DRIVER->end_brace()) BEGIN(IN_UNQUOTED); }
 	YY_BREAK
 case 36:
 /* rule 36 can match eol */
 YY_RULE_SETUP
-#line 80 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 80 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->append_unquoted(yytext, yyleng); }
 	YY_BREAK
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 81 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 81 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->append_unquoted(yytext, yyleng); }
 	YY_BREAK
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 83 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ DRIVER->_ws_pending = true; }
+#line 83 "/home/gary/projects/nmhit/src/Lexer.l"
+{ DRIVER->_ws_pending += yytext; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 84 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 84 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 85 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 85 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK(TOK_SEMICOLON); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 86 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 86 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_ARRAY_BRACE); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 87 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 87 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK_S(TOK_FLOAT); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 88 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 88 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK_S(TOK_INTEGER); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 89 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 89 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK_S(TOK_ARRAY_ELEM); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 90 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 90 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->lex_error(yytext, yylineno); }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 92 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 92 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 93 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 93 "/home/gary/projects/nmhit/src/Lexer.l"
 {
     if (DRIVER->end_brace()) {
         BEGIN(IN_ARRAY);
@@ -1432,64 +1432,64 @@ YY_RULE_SETUP
 case 48:
 /* rule 48 can match eol */
 YY_RULE_SETUP
-#line 101 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 101 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 49:
 /* rule 49 can match eol */
 YY_RULE_SETUP
-#line 102 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 102 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
-#line 104 "/home/gary/projects/neml2-hit/src/Lexer.l"
-{ DRIVER->_ws_pending = true; }
+#line 104 "/home/gary/projects/nmhit/src/Lexer.l"
+{ DRIVER->_ws_pending += yytext; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 105 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 105 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 106 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 106 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK(TOK_SEMICOLON); }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 107 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 107 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_DARRAY_BRACE); }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 108 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 108 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK_S(TOK_FLOAT); }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 109 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 109 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK_S(TOK_INTEGER); }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 110 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 110 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK_S(TOK_ARRAY_ELEM); }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 111 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 111 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->lex_error(yytext, yylineno); }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 113 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 113 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 114 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 114 "/home/gary/projects/nmhit/src/Lexer.l"
 {
     if (DRIVER->end_brace()) {
         BEGIN(IN_DARRAY);
@@ -1502,23 +1502,23 @@ YY_RULE_SETUP
 case 60:
 /* rule 60 can match eol */
 YY_RULE_SETUP
-#line 122 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 122 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 61:
 /* rule 61 can match eol */
 YY_RULE_SETUP
-#line 123 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 123 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->set_yymore(); yymore(); }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 125 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 125 "/home/gary/projects/nmhit/src/Lexer.l"
 { /* skip */ }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 126 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 126 "/home/gary/projects/nmhit/src/Lexer.l"
 {
     int len = yyleng;
     while (len > 0 && (yytext[len-1] == ' ' || yytext[len-1] == '\t'))
@@ -1531,12 +1531,12 @@ YY_RULE_SETUP
 case 64:
 /* rule 64 can match eol */
 YY_RULE_SETUP
-#line 134 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 134 "/home/gary/projects/nmhit/src/Lexer.l"
 { BEGIN(SECTION_BODY); }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 135 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 135 "/home/gary/projects/nmhit/src/Lexer.l"
 { DRIVER->lex_error(yytext, yylineno); BEGIN(SECTION_BODY); }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
@@ -1550,15 +1550,15 @@ case YY_STATE_EOF(IN_UBRACE):
 case YY_STATE_EOF(IN_ARRAY_BRACE):
 case YY_STATE_EOF(IN_DARRAY_BRACE):
 case YY_STATE_EOF(IN_INCLUDE):
-#line 137 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 137 "/home/gary/projects/nmhit/src/Lexer.l"
 { TOK(TOK_EOF); }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 139 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 139 "/home/gary/projects/nmhit/src/Lexer.l"
 ECHO;
 	YY_BREAK
-#line 1562 "/home/gary/projects/neml2-hit/build/Lexer.cpp"
+#line 1562 "/home/gary/projects/nmhit/build_regen/Lexer.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2688,6 +2688,6 @@ void yyfree (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 139 "/home/gary/projects/neml2-hit/src/Lexer.l"
+#line 139 "/home/gary/projects/nmhit/src/Lexer.l"
 
 

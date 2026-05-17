@@ -932,8 +932,8 @@ ParseDriver::build_array_value(std::vector<std::unique_ptr<nmhit::Node>> elems)
     else
     {
       auto * f = dynamic_cast<nmhit::Field *>(e.get());
-      if (!first_in_row && f && !f->path().empty())
-        out += ' ';
+      if (!first_in_row && f)
+        out += f->path();
       first_in_row = false;
       if (f)
         out += f->raw_val();
