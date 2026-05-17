@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
-project(neml2-hit VERSION 0.1.0 LANGUAGES CXX)
+# Keep this version in sync with [project] version in pyproject.toml.
+project(neml2-hit VERSION 0.1.3 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
