@@ -42,13 +42,11 @@
 
 
 // Unqualified %code blocks.
-#line 35 "/home/gary/projects/neml2-hit/src/Parser.y"
 
 #include "ParseDriver.h"
 #undef  yylex
 #define yylex driver.lex
 
-#line 52 "/home/gary/projects/neml2-hit/build/Parser.cpp"
 
 
 #ifndef YY_
@@ -139,9 +137,7 @@
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
-#line 18 "/home/gary/projects/neml2-hit/src/Parser.y"
 namespace nmhit_detail {
-#line 145 "/home/gary/projects/neml2-hit/build/Parser.cpp"
 
   /// Build a parser object.
   Parser::Parser (nmhit_detail::ParseDriver & driver_yyarg)
@@ -845,208 +841,147 @@ namespace nmhit_detail {
           switch (yyn)
             {
   case 2: // start: items
-#line 76 "/home/gary/projects/neml2-hit/src/Parser.y"
            { driver.set_root(std::move(yystack_[0].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ())); }
-#line 851 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 3: // items: %empty
-#line 80 "/home/gary/projects/neml2-hit/src/Parser.y"
             {}
-#line 857 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 4: // items: items item
-#line 82 "/home/gary/projects/neml2-hit/src/Parser.y"
     {
       if (yystack_[0].value.as < std::unique_ptr<nmhit::Node> > ())
         yystack_[1].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ().push_back(std::move(yystack_[0].value.as < std::unique_ptr<nmhit::Node> > ()));
       yylhs.value.as < std::vector<std::unique_ptr<nmhit::Node>> > () = std::move(yystack_[1].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ());
     }
-#line 867 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 5: // item: section
-#line 90 "/home/gary/projects/neml2-hit/src/Parser.y"
              { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = std::move(yystack_[0].value.as < std::unique_ptr<nmhit::Node> > ()); }
-#line 873 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 6: // item: field
-#line 91 "/home/gary/projects/neml2-hit/src/Parser.y"
              { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = std::move(yystack_[0].value.as < std::unique_ptr<nmhit::Node> > ()); }
-#line 879 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 7: // item: comment
-#line 92 "/home/gary/projects/neml2-hit/src/Parser.y"
              { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = std::move(yystack_[0].value.as < std::unique_ptr<nmhit::Node> > ()); }
-#line 885 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 8: // item: blank
-#line 93 "/home/gary/projects/neml2-hit/src/Parser.y"
              { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = std::move(yystack_[0].value.as < std::unique_ptr<nmhit::Node> > ()); }
-#line 891 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 9: // item: include
-#line 94 "/home/gary/projects/neml2-hit/src/Parser.y"
              { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = std::move(yystack_[0].value.as < std::unique_ptr<nmhit::Node> > ()); }
-#line 897 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 10: // section: "[" "section path" ']' items "[]"
-#line 101 "/home/gary/projects/neml2-hit/src/Parser.y"
     { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = driver.build_section(yystack_[3].value.as < std::string > (), std::move(yystack_[1].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ()), yylhs.location); }
-#line 903 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 11: // field: "identifier" assign_op value
-#line 108 "/home/gary/projects/neml2-hit/src/Parser.y"
     { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = driver.build_field(yystack_[2].value.as < std::string > (), yystack_[1].value.as < std::string > () == ":=", yystack_[0].value.as < std::string > (), yylhs.location); }
-#line 909 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 12: // assign_op: "="
-#line 112 "/home/gary/projects/neml2-hit/src/Parser.y"
                   { yylhs.value.as < std::string > () = "=";  }
-#line 915 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 13: // assign_op: ":="
-#line 113 "/home/gary/projects/neml2-hit/src/Parser.y"
                   { yylhs.value.as < std::string > () = ":="; }
-#line 921 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 14: // value: scalar
-#line 118 "/home/gary/projects/neml2-hit/src/Parser.y"
                                                       { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 927 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 15: // value: "'" array_rows "'"
-#line 119 "/home/gary/projects/neml2-hit/src/Parser.y"
                                                       { yylhs.value.as < std::string > () = driver.build_array_value(std::move(yystack_[1].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ())); }
-#line 933 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 16: // value: "'" "'"
-#line 120 "/home/gary/projects/neml2-hit/src/Parser.y"
                                                       { yylhs.value.as < std::string > () = "''"; }
-#line 939 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 17: // scalar: "integer"
-#line 124 "/home/gary/projects/neml2-hit/src/Parser.y"
                      { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 945 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 18: // scalar: "floating-point number"
-#line 125 "/home/gary/projects/neml2-hit/src/Parser.y"
                       { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 951 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 19: // scalar: "unquoted string"
-#line 126 "/home/gary/projects/neml2-hit/src/Parser.y"
                      { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 957 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 20: // scalar: "brace expression"
-#line 127 "/home/gary/projects/neml2-hit/src/Parser.y"
                      { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 963 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 21: // array_rows: array_row
-#line 132 "/home/gary/projects/neml2-hit/src/Parser.y"
                { yylhs.value.as < std::vector<std::unique_ptr<nmhit::Node>> > () = std::move(yystack_[0].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ()); }
-#line 969 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 22: // array_rows: array_rows ";" array_row
-#line 134 "/home/gary/projects/neml2-hit/src/Parser.y"
     {
       yystack_[2].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ().push_back(nullptr);               // nullptr = row separator sentinel
       for (auto & e : yystack_[0].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ())
         yystack_[2].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ().push_back(std::move(e));
       yylhs.value.as < std::vector<std::unique_ptr<nmhit::Node>> > () = std::move(yystack_[2].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ());
     }
-#line 980 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 23: // array_row: array_elem
-#line 144 "/home/gary/projects/neml2-hit/src/Parser.y"
     {
       yylhs.value.as < std::vector<std::unique_ptr<nmhit::Node>> > ().push_back(std::make_unique<nmhit::Field>("", yystack_[0].value.as < std::string > ()));
-      driver._ws_pending = false;
+      driver._ws_pending.clear();
     }
-#line 989 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 24: // array_row: array_row array_elem
-#line 149 "/home/gary/projects/neml2-hit/src/Parser.y"
     {
-      std::string sp = driver._ws_pending ? " " : "";
-      driver._ws_pending = false;
+      std::string sp;
+      std::swap(sp, driver._ws_pending);
       yystack_[1].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ().push_back(std::make_unique<nmhit::Field>(std::move(sp), yystack_[0].value.as < std::string > ()));
       yylhs.value.as < std::vector<std::unique_ptr<nmhit::Node>> > () = std::move(yystack_[1].value.as < std::vector<std::unique_ptr<nmhit::Node>> > ());
     }
-#line 1000 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 25: // array_elem: "array element"
-#line 158 "/home/gary/projects/neml2-hit/src/Parser.y"
                    { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 1006 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 26: // array_elem: "integer"
-#line 159 "/home/gary/projects/neml2-hit/src/Parser.y"
                    { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 1012 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 27: // array_elem: "floating-point number"
-#line 160 "/home/gary/projects/neml2-hit/src/Parser.y"
                     { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 1018 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 28: // array_elem: "brace expression"
-#line 161 "/home/gary/projects/neml2-hit/src/Parser.y"
                    { yylhs.value.as < std::string > () = std::move(yystack_[0].value.as < std::string > ()); }
-#line 1024 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 29: // include: "!include" "include path"
-#line 168 "/home/gary/projects/neml2-hit/src/Parser.y"
     { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = driver.build_include(yystack_[0].value.as < std::string > (), yylhs.location); }
-#line 1030 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 30: // comment: "comment"
-#line 175 "/home/gary/projects/neml2-hit/src/Parser.y"
     {
       auto n = std::make_unique<nmhit::Comment>(yystack_[0].value.as < std::string > ());
       n->_set_location(driver.filename(), yystack_[0].location.begin.line, yystack_[0].location.begin.column);
       yylhs.value.as < std::unique_ptr<nmhit::Node> > () = std::move(n);
     }
-#line 1040 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
   case 31: // blank: "blank line"
-#line 185 "/home/gary/projects/neml2-hit/src/Parser.y"
                { yylhs.value.as < std::unique_ptr<nmhit::Node> > () = std::make_unique<nmhit::Blank>(); }
-#line 1046 "/home/gary/projects/neml2-hit/build/Parser.cpp"
     break;
 
 
-#line 1050 "/home/gary/projects/neml2-hit/build/Parser.cpp"
 
             default:
               break;
@@ -1587,11 +1522,8 @@ namespace nmhit_detail {
       return symbol_kind::S_YYUNDEF;
   }
 
-#line 18 "/home/gary/projects/neml2-hit/src/Parser.y"
 } // nmhit_detail
-#line 1593 "/home/gary/projects/neml2-hit/build/Parser.cpp"
 
-#line 188 "/home/gary/projects/neml2-hit/src/Parser.y"
 
 
 namespace nmhit_detail

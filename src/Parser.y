@@ -143,12 +143,12 @@ array_row
   : array_elem
     {
       $$.push_back(std::make_unique<nmhit::Field>("", $1));
-      driver._ws_pending = false;
+      driver._ws_pending.clear();
     }
   | array_row array_elem
     {
-      std::string sp = driver._ws_pending ? " " : "";
-      driver._ws_pending = false;
+      std::string sp;
+      std::swap(sp, driver._ws_pending);
       $1.push_back(std::make_unique<nmhit::Field>(std::move(sp), $2));
       $$ = std::move($1);
     }

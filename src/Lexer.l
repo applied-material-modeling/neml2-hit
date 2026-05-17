@@ -63,8 +63,8 @@ COMMENT    #[^\n]*
 <AFTER_EQ>\n                               { BEGIN(SECTION_BODY); }
 <AFTER_EQ>{FLOAT}                           { BEGIN(SECTION_BODY); TOK_S(TOK_FLOAT); }
 <AFTER_EQ>{INTEGER}                        { BEGIN(SECTION_BODY); TOK_S(TOK_INTEGER); }
-<AFTER_EQ>"\""                             { DRIVER->_ws_pending = false; BEGIN(IN_DARRAY); TOK(TOK_SINGLE_QUOTE); }
-<AFTER_EQ>"'"                              { DRIVER->_ws_pending = false; BEGIN(IN_ARRAY); TOK(TOK_SINGLE_QUOTE); }
+<AFTER_EQ>"\""                             { DRIVER->_ws_pending.clear(); BEGIN(IN_DARRAY); TOK(TOK_SINGLE_QUOTE); }
+<AFTER_EQ>"'"                              { DRIVER->_ws_pending.clear(); BEGIN(IN_ARRAY); TOK(TOK_SINGLE_QUOTE); }
 <AFTER_EQ>"${"                             { DRIVER->begin_unquoted(yytext, yyleng); DRIVER->begin_brace(); BEGIN(IN_UBRACE); }
 <AFTER_EQ>[^ \t\n\r\[#$'"\\]+             { DRIVER->begin_unquoted(yytext, yyleng); BEGIN(IN_UNQUOTED); }
 <AFTER_EQ>.                                { DRIVER->lex_error(yytext, yylineno); BEGIN(SECTION_BODY); }
@@ -80,7 +80,7 @@ COMMENT    #[^\n]*
 <IN_UBRACE>[^$}]+                          { DRIVER->append_unquoted(yytext, yyleng); }
 <IN_UBRACE>"$"[^{]                         { DRIVER->append_unquoted(yytext, yyleng); }
 
-<IN_ARRAY>[ \t\n\r]+                       { DRIVER->_ws_pending = true; }
+<IN_ARRAY>[ \t\n\r]+                       { DRIVER->_ws_pending += yytext; }
 <IN_ARRAY>"'"                              { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 <IN_ARRAY>";"                              { TOK(TOK_SEMICOLON); }
 <IN_ARRAY>"${"                             { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_ARRAY_BRACE); }
@@ -101,7 +101,7 @@ COMMENT    #[^\n]*
 <IN_ARRAY_BRACE>[^$}]+                     { DRIVER->set_yymore(); yymore(); }
 <IN_ARRAY_BRACE>"$"[^{]                    { DRIVER->set_yymore(); yymore(); }
 
-<IN_DARRAY>[ \t\n\r]+                      { DRIVER->_ws_pending = true; }
+<IN_DARRAY>[ \t\n\r]+                      { DRIVER->_ws_pending += yytext; }
 <IN_DARRAY>"\""                            { BEGIN(SECTION_BODY); TOK(TOK_SINGLE_QUOTE); }
 <IN_DARRAY>";"                             { TOK(TOK_SEMICOLON); }
 <IN_DARRAY>"${"                            { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_DARRAY_BRACE); }

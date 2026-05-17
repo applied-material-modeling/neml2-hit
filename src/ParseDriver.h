@@ -157,10 +157,10 @@ public:
     _col = _tok_start_col;
   }
 
-  // True when whitespace was skipped since the last array element token;
-  // read and cleared by the grammar to decide whether to insert a space
-  // in the reconstructed raw array value.
-  bool _ws_pending = false;
+  // Whitespace accumulated since the last array element token;
+  // read and cleared by the grammar to reproduce it verbatim in the
+  // reconstructed raw array value (preserving newlines in multiline strings).
+  std::string _ws_pending;
 
 private:
   // Set of Field nodes constructed with the ':=' operator.

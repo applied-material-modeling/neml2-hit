@@ -32,7 +32,7 @@
 
 
 /**
- ** \file /home/gary/projects/neml2-hit/build/Parser.h
+ ** \file /home/gary/projects/nmhit/build/Parser.h
  ** Define the nmhit_detail::parser class.
  */
 
@@ -42,10 +42,9 @@
 // especially those whose name start with YY_ or yy_.  They are
 // private implementation details that can be changed or removed.
 
-#ifndef YY_YY_HOME_GARY_PROJECTS_NEML2_HIT_BUILD_PARSER_H_INCLUDED
-# define YY_YY_HOME_GARY_PROJECTS_NEML2_HIT_BUILD_PARSER_H_INCLUDED
+#ifndef YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_PARSER_H_INCLUDED
+# define YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_PARSER_H_INCLUDED
 // "%code requires" blocks.
-#line 24 "/home/gary/projects/neml2-hit/src/Parser.y"
 
 #include <memory>
 #include <string>
@@ -54,7 +53,6 @@
 
 namespace nmhit_detail { class ParseDriver; }
 
-#line 58 "/home/gary/projects/neml2-hit/build/Parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -188,9 +186,7 @@ namespace nmhit_detail { class ParseDriver; }
 # define YYDEBUG 0
 #endif
 
-#line 18 "/home/gary/projects/neml2-hit/src/Parser.y"
 namespace nmhit_detail {
-#line 194 "/home/gary/projects/neml2-hit/build/Parser.h"
 
 
 
@@ -1514,11 +1510,9 @@ switch (yykind)
   };
 
 
-#line 18 "/home/gary/projects/neml2-hit/src/Parser.y"
 } // nmhit_detail
-#line 1520 "/home/gary/projects/neml2-hit/build/Parser.h"
 
 
 
 
-#endif // !YY_YY_HOME_GARY_PROJECTS_NEML2_HIT_BUILD_PARSER_H_INCLUDED
+#endif // !YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_PARSER_H_INCLUDED
