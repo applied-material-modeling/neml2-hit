@@ -20,6 +20,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE)
     src/Lexer.l
     ${CMAKE_CURRENT_BINARY_DIR}/Lexer.cpp
     DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Lexer.h
+    COMPILE_FLAGS "--noline"
   )
 
   BISON_TARGET(
@@ -27,6 +28,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE)
     src/Parser.y
     ${CMAKE_CURRENT_BINARY_DIR}/Parser.cpp
     DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Parser.h
+    COMPILE_FLAGS "--no-lines"
   )
 
   ADD_FLEX_BISON_DEPENDENCY(HITLexer HITParser)
@@ -38,18 +40,23 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE)
   set(_parser_include_dir ${CMAKE_CURRENT_BINARY_DIR})
 
   # Helper target: copy freshly-generated files back to generated/ for committing.
+  # The sed step removes any residual #line directives (flex emits one before
+  # %top{} even with --noline) so no local filesystem paths leak into the repo.
+  set(_gen_dest ${CMAKE_CURRENT_SOURCE_DIR}/generated)
   add_custom_target(update_generated
     COMMAND ${CMAKE_COMMAND} -E copy
-      ${CMAKE_CURRENT_BINARY_DIR}/Lexer.cpp
-      ${CMAKE_CURRENT_BINARY_DIR}/Lexer.h
-      ${CMAKE_CURRENT_BINARY_DIR}/Parser.cpp
-      ${CMAKE_CURRENT_BINARY_DIR}/Parser.h
-      ${CMAKE_CURRENT_BINARY_DIR}/location.hh
-      ${CMAKE_CURRENT_SOURCE_DIR}/generated/
+      Lexer.cpp Lexer.h Parser.cpp Parser.h location.hh ${_gen_dest}/
+    COMMAND sed -i "/^#line /d"
+      ${_gen_dest}/Lexer.cpp
+      ${_gen_dest}/Lexer.h
+      ${_gen_dest}/Parser.cpp
+      ${_gen_dest}/Parser.h
+      ${_gen_dest}/location.hh
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS
       ${FLEX_HITLexer_OUTPUTS}
       ${BISON_HITParser_OUTPUTS}
-    COMMENT "Copying generated parser/lexer files to generated/"
+    COMMENT "Stripping #line directives and copying generated parser/lexer files to generated/"
   )
 else()
   set(_parser_sources
