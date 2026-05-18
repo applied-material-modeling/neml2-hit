@@ -501,6 +501,7 @@ Section::clone() const
 {
   auto s = std::make_unique<Section>(_name);
   s->_set_location(filename(), line(), column());
+  s->_is_wrapper = _is_wrapper;
   for (const auto & c : children())
     s->add_child(c->clone());
   return s;
@@ -705,12 +706,16 @@ ParseDriver::parse()
 
 /// Apply last-override-wins semantics to items, merging same-name sections.
 ///
-/// Pass 1 — section merge: sections with the same name are collapsed into the
-///   first occurrence by moving all children of the duplicate into the first.
-///   This handles path-split fields that share a common ancestor section
-///   (e.g. "Models/a/foo = 1" and "Models/b/bar = 2" both create a "Models"
-///   wrapper; the two wrappers are merged so lookup through a single "Models"
-///   finds both).
+/// Pass 1 — path-wrapper section merge: a "path wrapper" is a section the
+///   parser synthesized to represent intermediate segments of a path-split
+///   key (e.g. the "Models" in `Models/a/foo = 1`), flagged via
+///   Section::is_path_wrapper().  When a wrapper meets a preceding same-name
+///   sibling (wrapper or explicit), its children are folded into that
+///   sibling and the duplicate node is dropped.  The surviving section
+///   becomes "explicit" if either input was explicit.
+///
+///   Two explicit `[Name] ... []` sections written by the user are NEVER
+///   merged — they round-trip as two distinct top-level blocks.
 ///
 /// Pass 2 — field duplicate / override check (per level):
 ///   - If the later occurrence was built with ':=', the earlier one is removed.
@@ -722,9 +727,11 @@ ParseDriver::parse()
 void
 ParseDriver::apply_overrides(std::vector<std::unique_ptr<nmhit::Node>> & items)
 {
-  // ── Pass 1: merge same-name sections ─────────────────────────────────────
+  // ── Pass 1: fold path-wrapper sections into same-name siblings ───────────
   {
-    std::unordered_map<std::string, std::size_t> section_first;
+    // For each section name, the index of the most recent surviving
+    // same-name section that a subsequent wrapper may fold into.
+    std::unordered_map<std::string, std::size_t> latest;
     std::vector<bool> merged(items.size(), false);
 
     for (std::size_t i = 0; i < items.size(); ++i)
@@ -733,19 +740,26 @@ ParseDriver::apply_overrides(std::vector<std::unique_ptr<nmhit::Node>> & items)
       if (!sec)
         continue;
 
-      auto it = section_first.find(sec->path());
-      if (it != section_first.end())
+      auto it = latest.find(sec->path());
+      if (it != latest.end())
       {
-        auto * first = dynamic_cast<nmhit::Section *>(items[it->second].get());
-        auto raw_kids = sec->children();
-        for (auto * k : raw_kids)
-          first->add_child(sec->remove_child(k));
-        merged[i] = true;
+        auto * prev = dynamic_cast<nmhit::Section *>(items[it->second].get());
+        const bool either_wrapper = sec->is_path_wrapper() || prev->is_path_wrapper();
+        if (either_wrapper)
+        {
+          auto raw_kids = sec->children();
+          for (auto * k : raw_kids)
+            prev->add_child(sec->remove_child(k));
+          // Surviving section is explicit if either input was explicit.
+          if (!sec->is_path_wrapper())
+            prev->_set_path_wrapper(false);
+          merged[i] = true;
+          continue;
+        }
+        // Both explicit: leave as separate siblings, fall through to update
+        // `latest` so a later wrapper folds into the most recent block.
       }
-      else
-      {
-        section_first[sec->path()] = i;
-      }
+      latest[sec->path()] = i;
     }
 
     if (std::any_of(merged.begin(), merged.end(), [](bool b) { return b; }))
@@ -842,6 +856,12 @@ split_path(const std::string & path)
 }
 
 /// Wrap a node in a chain of Section nodes for a/b/c-style paths.
+///
+/// Every wrapper created here is marked via `_set_path_wrapper(true)` so that
+/// apply_overrides() can distinguish synthesized wrappers (which must merge
+/// with same-name siblings to make `Models/a/foo = 1` + `Models/b/bar = 2`
+/// resolve through a single "Models") from explicit `[Models] ... []` blocks
+/// written by the user (which are preserved verbatim for round-tripping).
 static std::unique_ptr<nmhit::Node>
 wrap_in_sections(std::vector<std::string> segs,
                  std::unique_ptr<nmhit::Node> inner_node,
@@ -856,6 +876,7 @@ wrap_in_sections(std::vector<std::string> segs,
   {
     auto wrapper = std::make_unique<nmhit::Section>(segs[i]);
     wrapper->_set_location(fname, line, col);
+    wrapper->_set_path_wrapper(true);
     wrapper->add_child(std::move(inner_node));
     inner_node = std::move(wrapper);
   }
