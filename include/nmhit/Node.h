@@ -244,8 +244,18 @@ public:
   std::string render(int indent = 0, const std::string & indent_text = "  ") const override;
   std::unique_ptr<Node> clone() const override;
 
+  /// True if this section was synthesized by the parser to wrap a path-split
+  /// key (e.g. the "Models" in `Models/a/foo = 1`), rather than being written
+  /// explicitly by the user as `[Models] ... []`.  Wrapper sections are merged
+  /// with same-name siblings at parse time; explicit sections are not.
+  bool is_path_wrapper() const { return _is_wrapper; }
+
+  // ── internal setter (used by the parser) ──────────────────────────────────
+  void _set_path_wrapper(bool v) { _is_wrapper = v; }
+
 private:
   std::string _name;
+  bool _is_wrapper = false;
 };
 
 /// A key-value field, e.g. dim = 3 or values = '1 2 3'.

@@ -730,6 +730,72 @@ main()
            std::string::npos);
   });
 
+  // ── 20. Explicit duplicate sections preserved (round-trip) ────────────────
+
+  run("two_explicit_same_name_sections_preserved", []() {
+    // Two user-written [Models] blocks must remain as two distinct siblings
+    // — not collapsed into one — so the document round-trips intact.
+    auto root = p("[Models]\n  a = 1\n[]\n[Models]\n  b = 2\n[]");
+    auto secs = root->children(nmhit::NodeType::Section);
+    EXPECT(secs.size() == 2);
+    EXPECT(secs[0]->path() == "Models");
+    EXPECT(secs[1]->path() == "Models");
+    // The first block owns `a`, the second owns `b`; they are not merged.
+    EXPECT(secs[0]->children(nmhit::NodeType::Field).size() == 1);
+    EXPECT(secs[1]->children(nmhit::NodeType::Field).size() == 1);
+    EXPECT(secs[0]->children(nmhit::NodeType::Field)[0]->path() == "a");
+    EXPECT(secs[1]->children(nmhit::NodeType::Field)[0]->path() == "b");
+  });
+
+  run("two_explicit_sections_round_trip", []() {
+    // Rendering then re-parsing keeps both blocks distinct.
+    auto root = p("[Models]\n  a = 1\n[]\n[Models]\n  b = 2\n[]");
+    auto rendered = root->render();
+    auto root2 = p(rendered);
+    EXPECT(root2->children(nmhit::NodeType::Section).size() == 2);
+  });
+
+  run("explicit_then_path_split_merges", []() {
+    // A path-split fragment whose root name matches an existing explicit
+    // section folds into that explicit block — backward-compatible behavior.
+    auto root = p("[Models]\n  a = 1\n[]\nModels/b = 2");
+    auto secs = root->children(nmhit::NodeType::Section);
+    EXPECT(secs.size() == 1);
+    EXPECT(root->param<int>("Models/a") == 1);
+    EXPECT(root->param<int>("Models/b") == 2);
+  });
+
+  run("path_split_then_explicit_merges", []() {
+    // Reverse order: a leading path-split fragment is folded into the
+    // following explicit block of the same name.
+    auto root = p("Models/a = 1\n[Models]\n  b = 2\n[]");
+    auto secs = root->children(nmhit::NodeType::Section);
+    EXPECT(secs.size() == 1);
+    EXPECT(root->param<int>("Models/a") == 1);
+    EXPECT(root->param<int>("Models/b") == 2);
+  });
+
+  run("two_explicit_blocks_then_path_split_targets_latest", []() {
+    // [Models]a[]  [Models]b[]  Models/c=3  →  the wrapper folds into the
+    // most recent same-name explicit block (the second [Models]).
+    auto root = p("[Models]\n  a = 1\n[]\n[Models]\n  b = 2\n[]\nModels/c = 3");
+    auto secs = root->children(nmhit::NodeType::Section);
+    EXPECT(secs.size() == 2);
+    EXPECT(secs[0]->children(nmhit::NodeType::Field).size() == 1);  // just a
+    EXPECT(secs[1]->children(nmhit::NodeType::Field).size() == 2);  // b + c
+  });
+
+  run("explicit_duplicate_field_in_first_block_no_error", []() {
+    // Same field name in two SEPARATE explicit blocks of the same name is
+    // not a duplicate-field error: the blocks are independent containers.
+    auto root = p("[Models]\n  k = 1\n[]\n[Models]\n  k = 2\n[]");
+    auto secs = root->children(nmhit::NodeType::Section);
+    EXPECT(secs.size() == 2);
+    // find() walks the first match; HIT semantics for duplicate explicit
+    // sections leave value resolution document-order dependent.
+    EXPECT(root->param<int>("Models/k") == 1);
+  });
+
   // ── Summary ───────────────────────────────────────────────────────────────
 
   std::cerr << "\n=== Results: " << g_passed << " passed, " << g_failed << " failed ===\n";
