@@ -1,0 +1,10 @@
+- id: nmhit-format
+  name: nmhit-format
+  description: >-
+    Reformat NEML2-dialect HIT input files in place via nmhit's reparse/render
+    round-trip. Files without the `# neml2` dialect marker on their first
+    non-blank line are silently skipped.
+  entry: nmhit-format
+  language: python
+  files: \.i$
+  types: [text]

@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nmhit"
-version = "0.1.4"  # Keep in sync with VERSION in CMakeLists.txt.
+version = "0.1.5"  # Keep in sync with VERSION in CMakeLists.txt.
 description = "Python bindings for the nmhit NEML2-flavored HIT parser"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -17,6 +17,9 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+
+[project.scripts]
+nmhit-format = "nmhit._cli:format_files"
 
 [tool.scikit-build]
 cmake.build-type = "Release"
