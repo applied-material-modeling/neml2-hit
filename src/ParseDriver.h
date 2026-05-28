@@ -44,10 +44,19 @@ public:
   // ── Interface called from Flex action code ────────────────────────────
 
   /// Store a pending string value (full yytext) for the next lex() call.
-  void set_pending(const char * text, int len) { _pending.assign(text, len); }
+  void set_pending(const char * text, int len) { _pending.assign(text, len); _has_pending = true; }
 
   /// Store a pending string with explicit length (used for trimmed strings).
-  void set_pending_n(const char * text, int len) { _pending.assign(text, len); }
+  void set_pending_n(const char * text, int len) { _pending.assign(text, len); _has_pending = true; }
+
+  /// Like set_pending, but also marks the next field as verbatim (triple-quoted).
+  /// Verbatim fields can only be retrieved as std::string via param_str().
+  void set_verbatim_pending(const char * text, int len)
+  {
+    _pending.assign(text, len);
+    _has_pending = true;
+    _next_field_verbatim = true;
+  }
 
   /// Report a lexer error and mark the parse as failed.
   void lex_error(const char * text, int line);
@@ -124,6 +133,12 @@ private:
 
   // Pending string value for the current token
   std::string _pending;
+  // True when set_pending/flush_unquoted has been called for the current token
+  // (needed to correctly detect an intentionally-empty pending value, e.g. from ''''''.)
+  bool _has_pending = false;
+  // True when the pending value came from a triple-quoted verbatim string.
+  // Consumed and reset in build_field(); Field stores the flag permanently.
+  bool _next_field_verbatim = false;
 
   // Brace expression nesting counter
   int _brace_depth = 0;
@@ -147,6 +162,7 @@ public:
     _pending = std::move(_unquoted_acc);
     _tok_start_line = _unquoted_start_line;
     _tok_start_col = _unquoted_start_col;
+    _has_pending = true;
   }
 
   // Call this immediately before yyless(0) to undo the on_token_text() advance
@@ -161,6 +177,11 @@ public:
   // read and cleared by the grammar to reproduce it verbatim in the
   // reconstructed raw array value (preserving newlines in multiline strings).
   std::string _ws_pending;
+
+  // Accumulator for triple-quoted verbatim strings ('''...''' or """...""").
+  // Content between the delimiters is appended here and returned verbatim
+  // as a TOK_UNQUOTED_STR token when the closing delimiter is matched.
+  std::string _triple_str;
 
 private:
   // Set of Field nodes constructed with the ':=' operator.

@@ -32,7 +32,7 @@
 
 
 /**
- ** \file /home/gary/projects/nmhit/build/Parser.h
+ ** \file _build/Parser.h
  ** Define the nmhit_detail::parser class.
  */
 
@@ -42,8 +42,8 @@
 // especially those whose name start with YY_ or yy_.  They are
 // private implementation details that can be changed or removed.
 
-#ifndef YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_PARSER_H_INCLUDED
-# define YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_PARSER_H_INCLUDED
+#ifndef YY_YY_BUILD_PARSER_H_INCLUDED
+# define YY_YY_BUILD_PARSER_H_INCLUDED
 // "%code requires" blocks.
 
 #include <memory>
@@ -1515,4 +1515,4 @@ switch (yykind)
 
 
 
-#endif // !YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_PARSER_H_INCLUDED
+#endif // !YY_YY_BUILD_PARSER_H_INCLUDED

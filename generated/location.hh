@@ -31,12 +31,12 @@
 // version 2.2 of Bison.
 
 /**
- ** \file /home/gary/projects/nmhit/build/location.hh
+ ** \file _build/location.hh
  ** Define the nmhit_detail::location class.
  */
 
-#ifndef YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_LOCATION_HH_INCLUDED
-# define YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_LOCATION_HH_INCLUDED
+#ifndef YY_YY_BUILD_LOCATION_HH_INCLUDED
+# define YY_YY_BUILD_LOCATION_HH_INCLUDED
 
 # include <iostream>
 # include <string>
@@ -299,4 +299,4 @@ namespace nmhit_detail {
 
 } // nmhit_detail
 
-#endif // !YY_YY_HOME_GARY_PROJECTS_NMHIT_BUILD_LOCATION_HH_INCLUDED
+#endif // !YY_YY_BUILD_LOCATION_HH_INCLUDED

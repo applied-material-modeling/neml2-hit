@@ -169,6 +169,33 @@ path = /usr/local/share
 
 Unquoted strings are **single-line only** — they cannot contain whitespace or newlines.
 
+#### Verbatim string (triple-quoted)
+
+A triple-quoted string stores its content **verbatim** — all whitespace, newlines, and any
+mix of quote characters are preserved exactly as written.  Two delimiter styles are supported:
+
+```
+# Triple single-quote delimiter
+code = '''
+  import torch
+  result = torch.tensor([1.0, 2.0, 3.0])
+'''
+
+# Triple double-quote delimiter
+label = """it's a "verbatim" value"""
+```
+
+The content between the opening and closing `'''` (or `"""`) delimiters is returned unchanged by
+`param_str()`.  No whitespace stripping, no brace expansion, and no quote unescaping are performed.
+
+**Verbatim fields are string-only.**  Calling `param_int()`, `param_float()`, `param_bool()`,
+`param_list_*()`, or any other non-string accessor on a verbatim field raises `nmhit::Error`.
+Only `param_str()` (and its `param_optional_str` variant) is allowed.
+
+> **Tip:** Triple-quoted strings solve the classic HIT quoting problem — a `'...'` string cannot
+> contain `'`, and a `"..."` string cannot contain `"`.  Triple-quoted strings can contain any
+> combination of single and double quotes as long as they do not form the closing triple delimiter.
+
 #### Array (1-D)
 
 A whitespace-delimited sequence of elements enclosed in single quotes **or double quotes** —
@@ -275,7 +302,9 @@ quote       = "'" | '"' ;
 value       = integer | float | bool | unquoted_str
             | brace_expr
             | quote array_row (';' array_row)* quote
-            | quote quote ;
+            | quote quote
+            | "'''" <verbatim content> "'''"
+            | '"""' <verbatim content> '"""' ;
 array_row   = array_elem+ ;
 array_elem  = integer | float | unquoted_elem ;
 include     = '!include' path ;

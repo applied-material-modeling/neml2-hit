@@ -439,7 +439,20 @@ field_split_rows(const std::string & raw, const Node * n)
 std::string
 Node::_raw_string(const Node * n)
 {
-  return parse_string(as_field(n)->raw_val(), n);
+  auto * f = as_field(n);
+  if (f->is_verbatim())
+    return f->raw_val(); // verbatim: no unquoting, no brace expansion
+  return parse_string(f->raw_val(), n);
+}
+
+void
+Node::_assert_not_verbatim(const Node * n)
+{
+  if (auto * f = dynamic_cast<const Field *>(n); f && f->is_verbatim())
+    throw Error(
+      "verbatim (triple-quoted) field '" + f->fullpath() +
+      "' can only be read as a string via param_str()",
+      n);
 }
 
 std::vector<std::string>
@@ -511,7 +524,8 @@ Section::clone() const
 // Field
 // ═══════════════════════════════════════════════════════════════════════════════
 
-Field::Field(const std::string & name, const std::string & raw_value) : _name(name), _raw(raw_value)
+Field::Field(const std::string & name, const std::string & raw_value, bool verbatim)
+  : _name(name), _raw(raw_value), _verbatim(verbatim)
 {}
 
 void
@@ -639,6 +653,7 @@ int
 ParseDriver::lex(Parser::semantic_type * yylval, Parser::location_type * yylloc)
 {
   _pending.clear();
+  _has_pending = false;
 
   int tok = HITlex(_scanner);
 
@@ -647,7 +662,7 @@ ParseDriver::lex(Parser::semantic_type * yylval, Parser::location_type * yylloc)
   yylloc->end.line = _line;
   yylloc->end.column = _col;
 
-  if (!_pending.empty())
+  if (_has_pending)
     yylval->emplace<std::string>(std::move(_pending));
 
   return tok;
@@ -921,7 +936,9 @@ ParseDriver::build_field(const std::string & name,
   if (segs.empty())
     segs.push_back(name);
 
-  auto field = std::make_unique<nmhit::Field>(segs.back(), raw_value);
+  bool verbatim = _next_field_verbatim;
+  _next_field_verbatim = false;
+  auto field = std::make_unique<nmhit::Field>(segs.back(), raw_value, verbatim);
   field->_set_location(_fname, loc.begin.line, loc.begin.column);
   if (is_override)
     _override_fields.insert(field.get());

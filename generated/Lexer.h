@@ -585,6 +585,8 @@ void yyfree ( void * , yyscan_t yyscanner );
 #define IN_ARRAY_BRACE 9
 #define IN_DARRAY_BRACE 10
 #define IN_INCLUDE 11
+#define IN_TRIPLE_SQ 12
+#define IN_TRIPLE_DQ 13
 
 #endif
 

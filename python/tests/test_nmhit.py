@@ -496,3 +496,132 @@ def test_node_repr():
 def test_override_assign():
     root = nmhit.parse_text("k = 1\nk := 99")
     assert root.param_int("k") == 99
+
+
+# ── triple-quoted strings ─────────────────────────────────────────────────────
+
+def test_triple_single_quote_basic():
+    """'''value''' is parsed verbatim and returned by param_str."""
+    root = nmhit.parse_text("k = '''hello world'''")
+    assert root.param_str("k") == "hello world"
+
+
+def test_triple_double_quote_basic():
+    """\"\"\"value\"\"\"  is parsed verbatim and returned by param_str."""
+    root = nmhit.parse_text('k = """hello world"""')
+    assert root.param_str("k") == "hello world"
+
+
+def test_triple_single_quote_multiline():
+    """Triple single-quoted strings preserve internal newlines verbatim."""
+    root = nmhit.parse_text("k = '''\n  line1\n  line2\n'''")
+    val = root.param_str("k")
+    assert "line1" in val
+    assert "line2" in val
+    assert "\n" in val
+
+
+def test_triple_double_quote_multiline():
+    """Triple double-quoted strings preserve internal newlines verbatim."""
+    root = nmhit.parse_text('k = """\n  line1\n  line2\n"""')
+    val = root.param_str("k")
+    assert "line1" in val
+    assert "line2" in val
+    assert "\n" in val
+
+
+def test_triple_single_quote_contains_double_quotes():
+    """Triple single-quoted strings may contain double-quote characters."""
+    root = nmhit.parse_text("""k = '''say "hello"'''""")
+    assert root.param_str("k") == 'say "hello"'
+
+
+def test_triple_double_quote_contains_single_quotes():
+    """Triple double-quoted strings may contain single-quote characters."""
+    root = nmhit.parse_text("""k = \"\"\"it's fine\"\"\"""")
+    assert root.param_str("k") == "it's fine"
+
+
+def test_triple_single_quote_contains_single_quote():
+    """A single embedded apostrophe inside triple single-quoted string is allowed."""
+    root = nmhit.parse_text("k = '''it's verbatim'''")
+    assert root.param_str("k") == "it's verbatim"
+
+
+def test_triple_double_quote_contains_double_quote():
+    """A single embedded double-quote inside triple double-quoted string is allowed."""
+    root = nmhit.parse_text('k = """say "hi" """')
+    assert '"hi"' in root.param_str("k")
+
+
+def test_triple_single_quote_both_quote_types():
+    """Triple single-quoted strings may contain both quote types."""
+    root = nmhit.parse_text("""k = '''it's "great"'''""")
+    val = root.param_str("k")
+    assert "it's" in val
+    assert '"great"' in val
+
+
+def test_triple_double_quote_both_quote_types():
+    """Triple double-quoted strings may contain both quote types."""
+    # """...""" delimiter allows single ' freely; single " is also fine mid-string.
+    root = nmhit.parse_text('k = """it\'s "great" """')
+    val = root.param_str("k")
+    assert "it's" in val
+    assert '"great"' in val
+
+
+def test_triple_single_quote_in_section():
+    """Triple-quoted strings work inside sections."""
+    root = nmhit.parse_text("[s]\n  code = '''\n    result = 1\n  '''\n[]")
+    val = root.param_str("s/code")
+    assert "result" in val
+
+
+def test_triple_single_quote_multiline_indented():
+    """Indented multi-line triple-quoted content is preserved verbatim (no stripping)."""
+    root = nmhit.parse_text("k = '''\n      x = 1\n      y = 2\n    '''")
+    val = root.param_str("k")
+    assert "x = 1" in val
+    assert "y = 2" in val
+    # Leading whitespace of interior lines is preserved
+    assert "      x" in val or "    x" in val  # some indentation present
+
+
+def test_triple_quote_empty():
+    """An empty triple-quoted string returns an empty string."""
+    root = nmhit.parse_text("k = ''''''")
+    assert root.param_str("k") == ""
+
+
+def test_triple_quote_python_expression():
+    """Typical use case: Python code expression stored verbatim."""
+    code = "import torch\nresult = torch.tensor([1.0, 2.0, 3.0])"
+    hit = f"k = '''\n{code}\n'''"
+    root = nmhit.parse_text(hit)
+    val = root.param_str("k")
+    assert "import torch" in val
+    assert "torch.tensor" in val
+    assert "\n" in val
+
+
+def test_triple_quote_only_readable_as_string():
+    """Verbatim (triple-quoted) fields raise when read as non-string types."""
+    root = nmhit.parse_text("k = '''42'''")
+    # param_str must succeed
+    assert root.param_str("k") == "42"
+    # All non-string interpretations must raise
+    with pytest.raises(nmhit.Error, match="verbatim"):
+        root.param_int("k")
+    with pytest.raises(nmhit.Error, match="verbatim"):
+        root.param_float("k")
+    with pytest.raises(nmhit.Error, match="verbatim"):
+        root.param_bool("k")
+
+
+def test_triple_quote_not_readable_as_list():
+    """Verbatim fields also raise when read as list types."""
+    root = nmhit.parse_text("k = '''1 2 3'''")
+    assert root.param_str("k") == "1 2 3"
+    with pytest.raises(nmhit.Error, match="verbatim"):
+        root.param_list_int("k")

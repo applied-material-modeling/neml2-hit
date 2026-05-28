@@ -170,6 +170,8 @@ private:
   template <typename T>
   T _param_inner(const Node * n) const
   {
+    if constexpr (!std::is_same_v<T, std::string>)
+      _assert_not_verbatim(n);
     if constexpr (_is_vec<T>::value)
     {
       using Elem = typename T::value_type;
@@ -211,6 +213,8 @@ private:
   static std::string _raw_string(const Node * n);
   static std::vector<std::string> _token_list(const Node * n);
   static std::vector<std::vector<std::string>> _row_list(const Node * n);
+  // Throws nmhit::Error if n is a verbatim (triple-quoted) Field.
+  static void _assert_not_verbatim(const Node * n);
 
   Node * _parent = nullptr;
   std::vector<std::unique_ptr<Node>> _children;
@@ -262,7 +266,7 @@ private:
 class Field : public Node
 {
 public:
-  Field(const std::string & name, const std::string & raw_value);
+  Field(const std::string & name, const std::string & raw_value, bool verbatim = false);
 
   NodeType type() const override { return NodeType::Field; }
   std::string path() const override { return _name; }
@@ -275,9 +279,14 @@ public:
   /// Change the stored value.
   void set_val(const std::string & value);
 
+  /// True when this field was set via a triple-quoted verbatim string ('''...''' or """...""").
+  /// Such fields can only be read via param<std::string>() / param_str().
+  bool is_verbatim() const { return _verbatim; }
+
 private:
   std::string _name;
   std::string _raw;
+  bool _verbatim = false;
 };
 
 /// A comment, e.g. # some text.
