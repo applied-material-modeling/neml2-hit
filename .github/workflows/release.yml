@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.23
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
           CIBW_SKIP:  "*-musllinux* *-manylinux_i686"
@@ -74,6 +74,8 @@ jobs:
 
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
         # No API token needed — configure Trusted Publishing once on pypi.org:
         # Publisher: GitHub Actions, repo: <owner>/nmhit, workflow: release.yml,
         # environment: pypi
