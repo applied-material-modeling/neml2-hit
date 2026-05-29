@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nmhit"
-version = "0.2.0"  # Keep in sync with VERSION in CMakeLists.txt.
+version = "0.2.1"  # Keep in sync with VERSION in CMakeLists.txt.
 description = "Python bindings for the nmhit NEML2-flavored HIT parser"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -32,16 +32,15 @@ wheel.packages = ["python/nmhit"]
 # no-ops on earlier Pythons, so cp39-abi3 would still produce a cpython-39 suffix.
 
 [tool.cibuildwheel]
-build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
+build = "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
 skip = "*-musllinux* *-manylinux_i686"
 test-requires = ["pytest"]
 test-command = "pytest {project}/python/tests/ -v"
 
 [tool.cibuildwheel.linux]
-archs = ["x86_64", "aarch64"]
+archs = ["x86_64"]
 manylinux-x86_64-image = "manylinux_2_28"
-manylinux-aarch64-image = "manylinux_2_28"
 
 [tool.cibuildwheel.macos]
-archs = ["x86_64", "arm64"]
+archs = ["x86_64"]
 environment = {MACOSX_DEPLOYMENT_TARGET = "10.15"}  # std::filesystem requires 10.15+
