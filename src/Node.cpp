@@ -524,8 +524,11 @@ Section::clone() const
 // Field
 // ═══════════════════════════════════════════════════════════════════════════════
 
-Field::Field(const std::string & name, const std::string & raw_value, bool verbatim)
-  : _name(name), _raw(raw_value), _verbatim(verbatim)
+Field::Field(const std::string & name,
+             const std::string & raw_value,
+             bool verbatim,
+             char verbatim_delim)
+  : _name(name), _raw(raw_value), _verbatim(verbatim), _verbatim_delim(verbatim_delim)
 {}
 
 void
@@ -540,13 +543,22 @@ Field::render(int indent, const std::string & indent_text) const
   std::string pfx;
   for (int i = 0; i < indent; ++i)
     pfx += indent_text;
+  if (_verbatim)
+  {
+    // Wrap the body back in its original triple-quote delimiter so round-
+    // tripping is byte-exact. Body cannot contain three consecutive copies
+    // of the delimiter (the lexer would have closed the string), so the
+    // surrounding triple-quote is always a valid wrapping.
+    std::string triple(3, _verbatim_delim);
+    return pfx + _name + " = " + triple + _raw + triple + "\n";
+  }
   return pfx + _name + " = " + _raw + "\n";
 }
 
 std::unique_ptr<Node>
 Field::clone() const
 {
-  auto f = std::make_unique<Field>(_name, _raw);
+  auto f = std::make_unique<Field>(_name, _raw, _verbatim, _verbatim_delim);
   f->_set_location(filename(), line(), column());
   return f;
 }
@@ -937,8 +949,11 @@ ParseDriver::build_field(const std::string & name,
     segs.push_back(name);
 
   bool verbatim = _next_field_verbatim;
+  char verbatim_delim = _next_field_verbatim_delim;
   _next_field_verbatim = false;
-  auto field = std::make_unique<nmhit::Field>(segs.back(), raw_value, verbatim);
+  _next_field_verbatim_delim = '\'';
+  auto field =
+    std::make_unique<nmhit::Field>(segs.back(), raw_value, verbatim, verbatim_delim);
   field->_set_location(_fname, loc.begin.line, loc.begin.column);
   if (is_override)
     _override_fields.insert(field.get());

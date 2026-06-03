@@ -298,6 +298,53 @@ main()
     EXPECT(rendered.find("# My comment") != std::string::npos);
   });
 
+  // Byte-exact round-trip for triple-quoted (verbatim) fields. The formatter
+  // (nmhit-format) walks this exact pipeline; before this was fixed, render
+  // emitted `name = <body>` and dropped the `'''...'''` delimiters entirely.
+
+  run("round_trip_triple_quoted_inline_single", []() {
+    std::string input = "k = '''hello world'''\n";
+    EXPECT(p(input)->render() == input);
+  });
+
+  run("round_trip_triple_quoted_inline_double", []() {
+    std::string input = "k = \"\"\"hello world\"\"\"\n";
+    EXPECT(p(input)->render() == input);
+  });
+
+  run("round_trip_triple_quoted_multiline", []() {
+    std::string input = "k = '''\n  line one\n  line two\n'''\n";
+    EXPECT(p(input)->render() == input);
+  });
+
+  run("round_trip_triple_quoted_python_expr", []() {
+    // The motivating use case: a Python expression for a [Tensors] block
+    // with intentional indentation. The leading newline + indented body +
+    // trailing newline must all round-trip byte-for-byte.
+    std::string input =
+      "[Tensors]\n"
+      "  [strain]\n"
+      "    type = Python\n"
+      "    expr = '''\n"
+      "torch.stack([\n"
+      "    torch.linspace(0, 1, 5),\n"
+      "    torch.linspace(1, 2, 5),\n"
+      "])\n"
+      "'''\n"
+      "  []\n"
+      "[]\n";
+    EXPECT(p(input)->render() == input);
+  });
+
+  run("round_trip_triple_quoted_delimiter_preserved", []() {
+    // The renderer must wrap the body in the same delimiter character the
+    // input used — '''...''' stays single-triple, """...""" stays double.
+    std::string sq = "k = '''\nbody\n'''\n";
+    std::string dq = "k = \"\"\"\nbody\n\"\"\"\n";
+    EXPECT(p(sq)->render() == sq);
+    EXPECT(p(dq)->render() == dq);
+  });
+
   // ── 7. Override assignment ────────────────────────────────────────────────
 
   run("override_assign", []() {

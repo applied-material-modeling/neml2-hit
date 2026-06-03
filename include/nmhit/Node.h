@@ -266,7 +266,10 @@ private:
 class Field : public Node
 {
 public:
-  Field(const std::string & name, const std::string & raw_value, bool verbatim = false);
+  Field(const std::string & name,
+        const std::string & raw_value,
+        bool verbatim = false,
+        char verbatim_delim = '\'');
 
   NodeType type() const override { return NodeType::Field; }
   std::string path() const override { return _name; }
@@ -283,10 +286,15 @@ public:
   /// Such fields can only be read via param<std::string>() / param_str().
   bool is_verbatim() const { return _verbatim; }
 
+  /// Which delimiter the verbatim body was wrapped in originally: '\'' or '"'.
+  /// Meaningful only when is_verbatim() is true.
+  char verbatim_delim() const { return _verbatim_delim; }
+
 private:
   std::string _name;
   std::string _raw;
   bool _verbatim = false;
+  char _verbatim_delim = '\'';
 };
 
 /// A comment, e.g. # some text.

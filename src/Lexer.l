@@ -16,8 +16,8 @@ typedef nmhit_detail::ParseDriver HIT_Driver;
                       return nmhit_detail::Parser::token::t; } while(0)
 #define TOK_UNQUOTED do { DRIVER->flush_unquoted(); \
                           return nmhit_detail::Parser::token::TOK_UNQUOTED_STR; } while(0)
-#define TOK_TRIPLE do { \
-    DRIVER->set_verbatim_pending(DRIVER->_triple_str.c_str(), (int)DRIVER->_triple_str.size()); \
+#define TOK_TRIPLE(delim) do { \
+    DRIVER->set_verbatim_pending(DRIVER->_triple_str.c_str(), (int)DRIVER->_triple_str.size(), delim); \
     return nmhit_detail::Parser::token::TOK_UNQUOTED_STR; \
 } while(0)
 %}
@@ -76,12 +76,12 @@ COMMENT    #[^\n]*
 <AFTER_EQ>[^ \t\n\r\[#$'"\\]+             { DRIVER->begin_unquoted(yytext, yyleng); BEGIN(IN_UNQUOTED); }
 <AFTER_EQ>.                                { DRIVER->lex_error(yytext, yylineno); BEGIN(SECTION_BODY); }
 
-<IN_TRIPLE_SQ>"'''"                        { BEGIN(SECTION_BODY); TOK_TRIPLE; }
+<IN_TRIPLE_SQ>"'''"                        { BEGIN(SECTION_BODY); TOK_TRIPLE('\''); }
 <IN_TRIPLE_SQ>"''"                         { DRIVER->_triple_str += yytext; }
 <IN_TRIPLE_SQ>"'"                          { DRIVER->_triple_str += yytext; }
 <IN_TRIPLE_SQ>[^']+                        { DRIVER->_triple_str += yytext; }
 
-<IN_TRIPLE_DQ>"\"\"\""                     { BEGIN(SECTION_BODY); TOK_TRIPLE; }
+<IN_TRIPLE_DQ>"\"\"\""                     { BEGIN(SECTION_BODY); TOK_TRIPLE('"'); }
 <IN_TRIPLE_DQ>"\"\""                       { DRIVER->_triple_str += yytext; }
 <IN_TRIPLE_DQ>"\""                         { DRIVER->_triple_str += yytext; }
 <IN_TRIPLE_DQ>[^\"]+                       { DRIVER->_triple_str += yytext; }

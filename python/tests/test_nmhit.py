@@ -625,3 +625,54 @@ def test_triple_quote_not_readable_as_list():
     assert root.param_str("k") == "1 2 3"
     with pytest.raises(nmhit.Error, match="verbatim"):
         root.param_list_int("k")
+
+
+# ── triple-quoted round-trip rendering ────────────────────────────────────────
+# Round-trip = parse_text(s).render() == s, byte-for-byte. The formatter
+# (nmhit-format) walks this exact pipeline, so any divergence here is a
+# direct formatter-breaking bug.
+
+
+def test_triple_single_quote_roundtrip_inline():
+    src = "k = '''hello world'''\n"
+    assert nmhit.parse_text(src).render() == src
+
+
+def test_triple_double_quote_roundtrip_inline():
+    src = 'k = """hello world"""\n'
+    assert nmhit.parse_text(src).render() == src
+
+
+def test_triple_single_quote_roundtrip_multiline():
+    src = "k = '''\n  line1\n  line2\n'''\n"
+    assert nmhit.parse_text(src).render() == src
+
+
+def test_triple_double_quote_roundtrip_multiline():
+    src = 'k = """\n  line1\n  line2\n"""\n'
+    assert nmhit.parse_text(src).render() == src
+
+
+def test_triple_quote_roundtrip_python_expression():
+    src = (
+        "[Tensors]\n"
+        "  [strain]\n"
+        "    type = Python\n"
+        "    expr = '''\n"
+        "torch.stack([\n"
+        "    torch.linspace(0, 1, 5),\n"
+        "    torch.linspace(1, 2, 5),\n"
+        "])\n"
+        "'''\n"
+        "  []\n"
+        "[]\n"
+    )
+    assert nmhit.parse_text(src).render() == src
+
+
+def test_triple_quote_roundtrip_preserves_delimiter_style():
+    """The renderer must wrap the body in the same delimiter the input used."""
+    src_sq = "k = '''\nbody\n'''\n"
+    src_dq = 'k = """\nbody\n"""\n'
+    assert nmhit.parse_text(src_sq).render() == src_sq
+    assert nmhit.parse_text(src_dq).render() == src_dq

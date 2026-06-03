@@ -51,11 +51,14 @@ public:
 
   /// Like set_pending, but also marks the next field as verbatim (triple-quoted).
   /// Verbatim fields can only be retrieved as std::string via param_str().
-  void set_verbatim_pending(const char * text, int len)
+  /// `delim` records which character ('\'' or '"') the triple-quote used so
+  /// the renderer can wrap the body in the same delimiter on output.
+  void set_verbatim_pending(const char * text, int len, char delim)
   {
     _pending.assign(text, len);
     _has_pending = true;
     _next_field_verbatim = true;
+    _next_field_verbatim_delim = delim;
   }
 
   /// Report a lexer error and mark the parse as failed.
@@ -139,6 +142,9 @@ private:
   // True when the pending value came from a triple-quoted verbatim string.
   // Consumed and reset in build_field(); Field stores the flag permanently.
   bool _next_field_verbatim = false;
+  // Which character ('\'' or '"') wrapped the triple-quoted value; used by
+  // Field::render to round-trip with the same delimiter style.
+  char _next_field_verbatim_delim = '\'';
 
   // Brace expression nesting counter
   int _brace_depth = 0;

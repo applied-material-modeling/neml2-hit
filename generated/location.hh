@@ -31,12 +31,12 @@
 // version 2.2 of Bison.
 
 /**
- ** \file _build/location.hh
+ ** \file /home/thu/projects/neml2-hit/build/location.hh
  ** Define the nmhit_detail::location class.
  */
 
-#ifndef YY_YY_BUILD_LOCATION_HH_INCLUDED
-# define YY_YY_BUILD_LOCATION_HH_INCLUDED
+#ifndef YY_YY_HOME_THU_PROJECTS_NEML2_HIT_BUILD_LOCATION_HH_INCLUDED
+# define YY_YY_HOME_THU_PROJECTS_NEML2_HIT_BUILD_LOCATION_HH_INCLUDED
 
 # include <iostream>
 # include <string>
@@ -299,4 +299,4 @@ namespace nmhit_detail {
 
 } // nmhit_detail
 
-#endif // !YY_YY_BUILD_LOCATION_HH_INCLUDED
+#endif // !YY_YY_HOME_THU_PROJECTS_NEML2_HIT_BUILD_LOCATION_HH_INCLUDED
