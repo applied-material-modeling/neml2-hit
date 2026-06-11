@@ -861,6 +861,64 @@ main()
     EXPECT(root->param<int>("Models/k") == 1);
   });
 
+  // ── tilde in identifiers ──────────────────────────────────────────────────
+  // NEML2 uses ``var~1`` to denote "state at start of step" history variables;
+  // the parser has to accept ``~`` in field names + section path components.
+
+  run("ident_with_tilde_field_name", []() {
+    auto root = p("strain~1 = 42");
+    EXPECT(root->param<int>("strain~1") == 42);
+  });
+
+  run("ident_with_tilde_field_inside_section", []() {
+    auto root = p("[Settings]\n  elastic_strain~1 = '(2; 5)'\n[]");
+    auto * sec = root->find("Settings");
+    EXPECT(sec != nullptr);
+    EXPECT(sec->param<std::string>("elastic_strain~1") == "(2; 5)");
+  });
+
+  run("ident_with_tilde_section_path", []() {
+    auto root = p("[a~1]\n  k = 7\n[]");
+    auto * sec = root->find("a~1");
+    EXPECT(sec != nullptr);
+    EXPECT(sec->param<int>("k") == 7);
+  });
+
+  // ── brace expansion in triple-quoted strings ─────────────────────────────
+  // Verbatim triple-quoted bodies now go through the same ${var} expansion
+  // pass as single-quoted strings -- the verbatim flag controls quote
+  // stripping + delimiter preservation, not interpolation.
+
+  run("triple_single_quoted_brace_expansion", []() {
+    auto root = p("n = 5\n[blk]\n  body = '''\nuse ${n} here\n'''\n[]");
+    auto * blk = root->find("blk");
+    EXPECT(blk != nullptr);
+    EXPECT(blk->param<std::string>("body").find("use 5 here") != std::string::npos);
+  });
+
+  run("triple_double_quoted_brace_expansion", []() {
+    auto root = p("n = 7\n[blk]\n  body = \"\"\"\nuse ${n} here\n\"\"\"\n[]");
+    auto * blk = root->find("blk");
+    EXPECT(blk != nullptr);
+    EXPECT(blk->param<std::string>("body").find("use 7 here") != std::string::npos);
+  });
+
+  run("triple_quoted_without_brace_is_byte_exact", []() {
+    // A body with no ${ must pass through untouched -- no spurious
+    // interpolation pass that could mangle Python code etc.
+    auto root = p("k = '''\nline one\nline two\n'''");
+    EXPECT(root->param<std::string>("k") == "\nline one\nline two\n");
+  });
+
+  run("triple_quoted_brace_expansion_preserves_newlines", []() {
+    // Multi-line body around a ${var} interpolation -- the surrounding
+    // newlines must survive the expansion pass.
+    auto root = p("n = 3\n[blk]\n  body = '''\nbefore\n${n}\nafter\n'''\n[]");
+    auto * blk = root->find("blk");
+    EXPECT(blk != nullptr);
+    EXPECT(blk->param<std::string>("body") == "\nbefore\n3\nafter\n");
+  });
+
   // ── Summary ───────────────────────────────────────────────────────────────
 
   std::cerr << "\n=== Results: " << g_passed << " passed, " << g_failed << " failed ===\n";

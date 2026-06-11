@@ -441,7 +441,17 @@ Node::_raw_string(const Node * n)
 {
   auto * f = as_field(n);
   if (f->is_verbatim())
-    return f->raw_val(); // verbatim: no unquoting, no brace expansion
+  {
+    // Verbatim (triple-quoted) bodies are stored without their surrounding
+    // ''' / """ delimiters, so no unquoting step is needed. Brace expansion
+    // is still applied for parity with single-quoted strings -- this lets
+    // users interpolate `${var}` into multi-line Python blocks (NEML2
+    // benchmark inputs rely on this for ${nbatch} substitution).
+    const auto & v = f->raw_val();
+    if (has_brace_expr(v))
+      return expand_brace_expr(v, n);
+    return v;
+  }
   return parse_string(f->raw_val(), n);
 }
 
