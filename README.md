@@ -82,7 +82,8 @@ key = value
 ```
 
 **Identifier characters.** A field name may contain letters, digits, and any of
-`. / : < > + - * ! _`.  Slashes in a field name trigger path splitting (see below).
+`. / < > + - * ! _ ~`.  Slashes in a field name trigger path splitting (see below).
+The `~` is allowed primarily for NEML2's `var~1` history-variable convention.
 
 **Path splitting.** A slash in the field name creates intermediate `Section` nodes in the AST:
 
@@ -185,8 +186,21 @@ code = '''
 label = """it's a "verbatim" value"""
 ```
 
-The content between the opening and closing `'''` (or `"""`) delimiters is returned unchanged by
-`param_str()`.  No whitespace stripping, no brace expansion, and no quote unescaping are performed.
+The content between the opening and closing `'''` (or `"""`) delimiters is returned by
+`param_str()` with whitespace and quote characters preserved exactly — no whitespace stripping,
+no quote unescaping.  `${...}` brace expressions ARE expanded, the same way they are for
+single-quoted strings, so triple-quoted bodies can interpolate values from elsewhere in the document:
+
+```
+n = 5
+
+[block]
+  code = '''
+    for i in range(${n}):
+        print(i)
+  '''
+[]
+```
 
 **Verbatim fields are string-only.**  Calling `param_int()`, `param_float()`, `param_bool()`,
 `param_list_*()`, or any other non-string accessor on a verbatim field raises `nmhit::Error`.
@@ -313,7 +327,7 @@ blank       = <two or more consecutive newlines> ;
 
 path        = segment ('/' segment)* ;
 segment     = <one or more non-whitespace, non-bracket characters> ;
-ident       = [A-Za-z0-9_./<>+\-*!:]+ ;
+ident       = [A-Za-z0-9_./<>+\-*!~]+ ;
 integer     = [+\-]? [0-9]+ ;
 float       = [+\-]? ( [0-9]* '.' [0-9]+ | [0-9]+ '.' [0-9]* ) ([eE] [+\-]? [0-9]+)?
             | [+\-]? [0-9]+ [eE] [+\-]? [0-9]+ ;
