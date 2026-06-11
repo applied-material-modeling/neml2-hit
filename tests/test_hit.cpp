@@ -628,6 +628,24 @@ main()
     EXPECT(root->children(nmhit::NodeType::Field).size() == 1);
   });
 
+  run("post_override_no_space_around_assign", []() {
+    // Regression for the MOOSE-HIT command-line override convention
+    // `path/to/key:=value` (no whitespace). The old IDENT regex allowed
+    // ':' inside identifiers, so flex's longest-match greedily ate the
+    // ':', leaving `key:` as the field name and `=value` as a plain
+    // assignment — the override never fired and the original value won.
+    // Each line below would silently no-op before the IDENT fix.
+    auto r1 = nmhit::parse_text("k = 1", {}, {"k:=99"});
+    EXPECT(r1->param<int>("k") == 99);
+    auto r2 = nmhit::parse_text("a/k = 1", {}, {"a/k:=99"});
+    EXPECT(r2->param<int>("a/k") == 99);
+    auto r3 = nmhit::parse_text("a/b/c = 1", {}, {"a/b/c:=99"});
+    EXPECT(r3->param<int>("a/b/c") == 99);
+    // No-space-LHS variant (the most-typed MOOSE form): `key:= value`.
+    auto r4 = nmhit::parse_text("k = 1", {}, {"k:= 99"});
+    EXPECT(r4->param<int>("k") == 99);
+  });
+
   run("pre_and_post_empty_vectors_are_noop", []() {
     auto root1 = nmhit::parse_text("k = 42");
     auto root2 = nmhit::parse_text("k = 42", {}, {});
