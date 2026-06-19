@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 # Keep this version in sync with [project] version in pyproject.toml.
-project(neml2-hit VERSION 0.3.2 LANGUAGES CXX)
+project(neml2-hit VERSION 0.3.3 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -191,4 +191,13 @@ if(NMHIT_BUILD_PYTHON)
   # Install into the nmhit/ subdirectory inside the wheel.
   # scikit-build-core picks this up via wheel.packages = ["python/nmhit"].
   install(TARGETS _nmhit DESTINATION nmhit)
+
+  # Also ship the C++ dev files (the static libnmhit + public headers) inside the
+  # wheel's nmhit/ package, so downstream C++ consumers (e.g. NEML2's
+  # libneml2_aoti) can discover and link nmhit straight from site-packages via a
+  # Find module -- the same way libtorch is found in torch/{include,lib}. nmhit
+  # is built PIC (CMAKE_POSITION_INDEPENDENT_CODE=ON) so the static archive links
+  # cleanly into a shared library.
+  install(TARGETS nmhit ARCHIVE DESTINATION nmhit/lib)
+  install(DIRECTORY include/ DESTINATION nmhit/include)
 endif()
