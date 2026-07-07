@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 # Keep this version in sync with [project] version in pyproject.toml.
-project(neml2-hit VERSION 0.3.3 LANGUAGES CXX)
+project(neml2-hit VERSION 0.3.4 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -75,6 +75,9 @@ add_library(nmhit
   ${_parser_sources}
   src/Node.cpp
   src/BraceExpr.cpp
+  # Weak __cxa_call_terminate fallback so the static archive links into consumers
+  # built with an older toolchain than the (GCC >= 13) wheel build. See the file.
+  src/abi_compat.cpp
 )
 
 target_include_directories(nmhit
