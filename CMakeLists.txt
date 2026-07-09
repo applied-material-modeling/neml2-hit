@@ -89,7 +89,24 @@ target_include_directories(nmhit
     ${_parser_include_dir}
 )
 
-target_compile_options(nmhit PRIVATE -Wall -Wextra -Wno-unused-parameter)
+# Warning flags are compiler-specific: GCC/Clang take the -W family, MSVC takes
+# /W. Passing the GCC/Clang flags to cl.exe (as an unguarded list would) makes
+# MSVC choke -- the original blocker reported in neml2 issue #414.
+target_compile_options(nmhit PRIVATE
+  $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall;-Wextra;-Wno-unused-parameter>
+  $<$<CXX_COMPILER_ID:MSVC>:/W3>
+)
+
+# MSVC-specific compile settings for the parser/lexer:
+#  - YY_NO_UNISTD_H: the flex-generated Lexer.h unconditionally pulls in
+#    <unistd.h> (a POSIX header absent on MSVC) unless this is defined. The
+#    Lexer.l %top{} defines it for Lexer.cpp, but not for the DEFINES_FILE
+#    header, so define it target-wide to cover every translation unit.
+#  - _CRT_SECURE_NO_WARNINGS: silences C4996 on std::getenv (BraceExpr.cpp).
+target_compile_definitions(nmhit PRIVATE
+  $<$<PLATFORM_ID:Windows>:YY_NO_UNISTD_H>
+  $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
+)
 
 # ── install ───────────────────────────────────────────────────────────────────
 # C++ library install rules are skipped when building the Python wheel so that
