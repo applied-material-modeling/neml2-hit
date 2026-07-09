@@ -493,8 +493,8 @@ try {
 pip install nmhit
 ```
 
-Wheels are published to PyPI for Linux (x86\_64, aarch64) and macOS (x86\_64, arm64),
-covering Python 3.9 and later.  No Flex or Bison is required.
+Wheels are published to PyPI for Linux (x86\_64), macOS (x86\_64, arm64), and
+Windows (AMD64), covering Python 3.9 and later.  No Flex or Bison is required.
 
 ### Quick start
 

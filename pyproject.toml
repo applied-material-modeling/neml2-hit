@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nmhit"
-version = "0.3.4"  # Keep in sync with VERSION in CMakeLists.txt.
+version = "0.3.5"  # Keep in sync with VERSION in CMakeLists.txt.
 description = "Python bindings for the nmhit NEML2-flavored HIT parser"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -44,3 +44,6 @@ manylinux-x86_64-image = "manylinux_2_28"
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
 environment = {MACOSX_DEPLOYMENT_TARGET = "10.15"}  # std::filesystem requires 10.15+
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]

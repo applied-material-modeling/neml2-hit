@@ -11,10 +11,6 @@ jobs:
   python:
     name: "Python ${{ matrix.python-version }} / ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
-    # Windows/MSVC support is in progress (neml2 issue #414): keep it non-blocking
-    # while we iterate the build to green, so the required Linux/macOS cells still
-    # gate merges. Flip to required once Windows is stable (Phase 2).
-    continue-on-error: ${{ matrix.os == 'windows-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -44,18 +40,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-15]
+        os: [ubuntu-24.04, macos-15, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Build wheel (native arch)
-        uses: pypa/cibuildwheel@v2.19
+        # Pinned to the same cibuildwheel as release.yml so this packaging check
+        # exercises the exact build path the published wheels take.
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_BUILD: "cp39-* cp313-*"
           CIBW_SKIP:  "*-musllinux* *-manylinux_i686"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_MACOS: "native"
+          CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_TEST_REQUIRES: "pytest"
           CIBW_TEST_COMMAND:  "pytest {project}/python/tests/ -v"
@@ -81,11 +80,9 @@ jobs:
   cpp:
     name: "C++ / ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
-    # Non-blocking Windows/MSVC cell while we iterate the build to green (see the
-    # python job above). Uses bash on every OS (Git Bash on Windows) so the same
-    # commands work everywhere; on Windows CMake defaults to the multi-config
-    # Visual Studio generator, so the build/test steps pass an explicit config.
-    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    # Uses bash on every OS (Git Bash on Windows) so the same commands work
+    # everywhere; on Windows CMake defaults to the multi-config Visual Studio
+    # generator, so the build/test steps pass an explicit config.
     defaults:
       run:
         shell: bash
