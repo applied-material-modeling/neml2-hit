@@ -99,7 +99,12 @@ target_include_directories(nmhit
 # MSVC choke -- the original blocker reported in neml2 issue #414.
 target_compile_options(nmhit PRIVATE
   $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall;-Wextra;-Wno-unused-parameter>
-  $<$<CXX_COMPILER_ID:MSVC>:/W3>
+  # /Zc:__cplusplus: MSVC otherwise reports __cplusplus == 199711L even under
+  # /std:c++17, which makes the Bison-generated Parser.h take its pre-C++11
+  # branch and *copy* the semantic value -- a move-only std::unique_ptr<Node> --
+  # instead of moving it (C2280, deleted copy ctor). The flag reports the true
+  # standard so Bison selects the C++11 move path.
+  $<$<CXX_COMPILER_ID:MSVC>:/W3;/Zc:__cplusplus>
 )
 
 # MSVC-specific compile settings for the parser/lexer:
