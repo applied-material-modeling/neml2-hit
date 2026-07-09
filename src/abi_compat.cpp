@@ -19,13 +19,17 @@
 // resort on an older runtime, where it does what libstdc++'s version does: claim
 // the in-flight exception object and terminate.
 
-#include <cxxabi.h>
 #include <exception>
 
 // Only libstdc++ (GCC, and clang-with-libstdc++) has/needs __cxa_call_terminate.
-// libc++ (e.g. macOS) uses a different terminate helper, so this is a no-op there;
-// __GLIBCXX__ is defined by the <exception> include above only under libstdc++.
+// libc++ (e.g. macOS) uses a different terminate helper, and MSVC has neither
+// libstdc++ nor <cxxabi.h>, so this whole file is a no-op on both -- the entire
+// body (including the <cxxabi.h> include, which does not exist on MSVC) sits
+// behind the guard. __GLIBCXX__ is defined by the <exception> include above only
+// under libstdc++.
 #ifdef __GLIBCXX__
+#include <cxxabi.h>
+
 extern "C" __attribute__((weak)) void
 __cxa_call_terminate(void * exc) noexcept
 {

@@ -160,8 +160,16 @@ public:
 
 protected:
   Node() = default;
-  /// Shallow copy of location — children not copied.
-  Node(const Node &) = default;
+
+  // Node owns its children through unique_ptr and is duplicated only via the
+  // virtual clone() (which rebuilds from fields, never copy-constructs). The copy
+  // operations are deleted so std::is_copy_constructible / is_move_constructible
+  // report false on every compiler -- GCC miscomputes them for a protected
+  // `= default` copy ctor, and relying on that miscomputation forced the Python
+  // bindings into an illegal std::is_move_constructible specialization that newer
+  // MSVC rejects. Deleting here removes the need for any trait workaround.
+  Node(const Node &) = delete;
+  Node & operator=(const Node &) = delete;
 
 private:
   /// Dispatch through TypeRegistry with automatic vector decomposition.
@@ -307,12 +315,15 @@ public:
   std::unique_ptr<Node> clone() const override;
 
   const std::string & text() const { return _text; }
-  bool is_inline() const { return _inline; }
-  void set_inline(bool v) { _inline = v; }
+  bool is_inline() const { return _is_inline; }
+  void set_inline(bool v) { _is_inline = v; }
 
 private:
   std::string _text;
-  bool _inline;
+  // Named _is_inline, not _inline: `_inline` is a reserved keyword under MSVC
+  // (a Microsoft dialect alias for `inline`), so a member of that name fails to
+  // compile with cl.exe.
+  bool _is_inline;
 };
 
 /// A blank line (preserved for round-trip rendering).

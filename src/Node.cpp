@@ -577,12 +577,12 @@ Field::clone() const
 // Comment
 // ═══════════════════════════════════════════════════════════════════════════════
 
-Comment::Comment(const std::string & text, bool is_inline) : _text(text), _inline(is_inline) {}
+Comment::Comment(const std::string & text, bool is_inline) : _text(text), _is_inline(is_inline) {}
 
 std::string
 Comment::render(int indent, const std::string & indent_text) const
 {
-  if (_inline)
+  if (_is_inline)
     return " " + _text + "\n";
 
   std::string pfx;
@@ -594,7 +594,7 @@ Comment::render(int indent, const std::string & indent_text) const
 std::unique_ptr<Node>
 Comment::clone() const
 {
-  auto c = std::make_unique<Comment>(_text, _inline);
+  auto c = std::make_unique<Comment>(_text, _is_inline);
   c->_set_location(filename(), line(), column());
   return c;
 }
@@ -902,7 +902,12 @@ split_path(const std::string & path)
 static std::unique_ptr<nmhit::Node>
 wrap_in_sections(std::vector<std::string> segs,
                  std::unique_ptr<nmhit::Node> inner_node,
-                 const std::string & fname,
+                 // std::filesystem::path, not std::string: the callers hold a
+                 // path (_fname) and forward it straight to _set_location (which
+                 // also takes a path). path -> string is implicit only where
+                 // path::string_type is std::string (POSIX); on Windows it is
+                 // std::wstring, so the string parameter failed to compile there.
+                 const std::filesystem::path & fname,
                  int line,
                  int col)
 {

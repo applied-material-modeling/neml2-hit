@@ -6,12 +6,26 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# ── Flex + Bison ───────────────────────────────────────────────────────────────
-# Debug builds regenerate the parser/lexer from source (flex + bison required).
-# All other build types (Release, RelWithDebInfo, MinSizeRel, …) use the
-# pre-generated files committed to generated/ and need no flex or bison.
+# MSVC reports __cplusplus == 199711L by default even under /std:c++17, which
+# makes standards-conditional code take its pre-C++11 branch -- notably the
+# Bison-generated parser, whose value type is a move-only std::unique_ptr<Node>
+# it would otherwise try to copy. Report the true value for every target here
+# (the library, the Python module, and the tests) rather than per-target.
+if(MSVC)
+  add_compile_options(/Zc:__cplusplus)
+endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE)
+# ── Flex + Bison ───────────────────────────────────────────────────────────────
+# Single-config Debug (or no-build-type) builds regenerate the parser/lexer from
+# source (flex + bison required). Every other case uses the pre-generated files
+# committed to generated/ and needs no flex or bison:
+#   - single-config Release/RelWithDebInfo/MinSizeRel, and
+#   - ALL multi-config generators (Visual Studio, Ninja Multi-Config), where the
+#     per-config build type is unknown at configure time so CMAKE_BUILD_TYPE is
+#     empty by design. This is the wheel-build path on Windows (scikit-build-core
+#     drives the Visual Studio generator), which must NOT require flex/bison.
+get_property(_nmhit_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT _nmhit_multi_config AND (CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE))
   find_package(FLEX 2.6 REQUIRED)
   find_package(BISON 3.7 REQUIRED)
 
@@ -89,7 +103,24 @@ target_include_directories(nmhit
     ${_parser_include_dir}
 )
 
-target_compile_options(nmhit PRIVATE -Wall -Wextra -Wno-unused-parameter)
+# Warning flags are compiler-specific: GCC/Clang take the -W family, MSVC takes
+# /W. Passing the GCC/Clang flags to cl.exe (as an unguarded list would) makes
+# MSVC choke -- the original blocker reported in neml2 issue #414.
+target_compile_options(nmhit PRIVATE
+  $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall;-Wextra;-Wno-unused-parameter>
+  $<$<CXX_COMPILER_ID:MSVC>:/W3>
+)
+
+# MSVC-specific compile settings for the parser/lexer:
+#  - YY_NO_UNISTD_H: the flex-generated Lexer.h unconditionally pulls in
+#    <unistd.h> (a POSIX header absent on MSVC) unless this is defined. The
+#    Lexer.l %top{} defines it for Lexer.cpp, but not for the DEFINES_FILE
+#    header, so define it target-wide to cover every translation unit.
+#  - _CRT_SECURE_NO_WARNINGS: silences C4996 on std::getenv (BraceExpr.cpp).
+target_compile_definitions(nmhit PRIVATE
+  $<$<PLATFORM_ID:Windows>:YY_NO_UNISTD_H>
+  $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
+)
 
 # ── install ───────────────────────────────────────────────────────────────────
 # C++ library install rules are skipped when building the Python wheel so that
