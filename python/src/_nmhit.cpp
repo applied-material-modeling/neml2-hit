@@ -6,57 +6,11 @@
 
 #include "nmhit/nmhit.h"
 
-// GCC incorrectly reports Node and its subclasses as copy/move-constructible
-// because of a quirk with the protected `= default` copy constructor in Node
-// combined with GCC's implicit-move-constructor fall-through rules.
-// The actual instantiation fails (vector<unique_ptr<Node>> is non-copyable).
-//
-// Fix for copy: use nanobind's specializable detail::is_copy_constructible.
-// Fix for move: specialize std::is_move_constructible (allowed for user types).
-
-namespace nanobind::detail
-{
-template <>
-struct is_copy_constructible<nmhit::Node> : std::false_type
-{};
-template <>
-struct is_copy_constructible<nmhit::Root> : std::false_type
-{};
-template <>
-struct is_copy_constructible<nmhit::Section> : std::false_type
-{};
-template <>
-struct is_copy_constructible<nmhit::Field> : std::false_type
-{};
-template <>
-struct is_copy_constructible<nmhit::Comment> : std::false_type
-{};
-template <>
-struct is_copy_constructible<nmhit::Blank> : std::false_type
-{};
-} // namespace nanobind::detail
-
-namespace std
-{
-template <>
-struct is_move_constructible<nmhit::Node> : false_type
-{};
-template <>
-struct is_move_constructible<nmhit::Root> : false_type
-{};
-template <>
-struct is_move_constructible<nmhit::Section> : false_type
-{};
-template <>
-struct is_move_constructible<nmhit::Field> : false_type
-{};
-template <>
-struct is_move_constructible<nmhit::Comment> : false_type
-{};
-template <>
-struct is_move_constructible<nmhit::Blank> : false_type
-{};
-} // namespace std
+// Node and its subclasses delete their copy/move operations (see Node.h), so
+// std::is_copy_constructible / std::is_move_constructible report false for them
+// on every compiler and nanobind picks pointer/holder semantics automatically.
+// No trait specialization is needed here -- the previous std::is_move_constructible
+// workaround was an illegal standard-library specialization that newer MSVC rejects.
 
 namespace nb = nanobind;
 using namespace nmhit;

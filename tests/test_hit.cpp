@@ -17,6 +17,18 @@
 #include <string>
 #include <vector>
 
+// setenv() is POSIX-only; MSVC provides _putenv_s instead. Small portable shim
+// used by the brace-env test below.
+static void
+set_env_var(const char * name, const char * value)
+{
+#ifdef _WIN32
+  _putenv_s(name, value);
+#else
+  ::setenv(name, value, 1);
+#endif
+}
+
 // ─── mini test framework ──────────────────────────────────────────────────────
 
 static int g_passed = 0;
@@ -357,7 +369,7 @@ main()
 
   run("brace_env", []() {
     // Set a known env var
-    ::setenv("HIT_TEST_VAR", "hello_from_env", 1);
+    set_env_var("HIT_TEST_VAR", "hello_from_env");
     auto root = p("v = ${env HIT_TEST_VAR}");
     EXPECT(root->param<std::string>("v") == "hello_from_env");
   });

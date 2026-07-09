@@ -160,8 +160,16 @@ public:
 
 protected:
   Node() = default;
-  /// Shallow copy of location — children not copied.
-  Node(const Node &) = default;
+
+  // Node owns its children through unique_ptr and is duplicated only via the
+  // virtual clone() (which rebuilds from fields, never copy-constructs). The copy
+  // operations are deleted so std::is_copy_constructible / is_move_constructible
+  // report false on every compiler -- GCC miscomputes them for a protected
+  // `= default` copy ctor, and relying on that miscomputation forced the Python
+  // bindings into an illegal std::is_move_constructible specialization that newer
+  // MSVC rejects. Deleting here removes the need for any trait workaround.
+  Node(const Node &) = delete;
+  Node & operator=(const Node &) = delete;
 
 private:
   /// Dispatch through TypeRegistry with automatic vector decomposition.

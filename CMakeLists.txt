@@ -6,6 +6,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# MSVC reports __cplusplus == 199711L by default even under /std:c++17, which
+# makes standards-conditional code take its pre-C++11 branch -- notably the
+# Bison-generated parser, whose value type is a move-only std::unique_ptr<Node>
+# it would otherwise try to copy. Report the true value for every target here
+# (the library, the Python module, and the tests) rather than per-target.
+if(MSVC)
+  add_compile_options(/Zc:__cplusplus)
+endif()
+
 # ── Flex + Bison ───────────────────────────────────────────────────────────────
 # Single-config Debug (or no-build-type) builds regenerate the parser/lexer from
 # source (flex + bison required). Every other case uses the pre-generated files
@@ -99,12 +108,7 @@ target_include_directories(nmhit
 # MSVC choke -- the original blocker reported in neml2 issue #414.
 target_compile_options(nmhit PRIVATE
   $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall;-Wextra;-Wno-unused-parameter>
-  # /Zc:__cplusplus: MSVC otherwise reports __cplusplus == 199711L even under
-  # /std:c++17, which makes the Bison-generated Parser.h take its pre-C++11
-  # branch and *copy* the semantic value -- a move-only std::unique_ptr<Node> --
-  # instead of moving it (C2280, deleted copy ctor). The flag reports the true
-  # standard so Bison selects the C++11 move path.
-  $<$<CXX_COMPILER_ID:MSVC>:/W3;/Zc:__cplusplus>
+  $<$<CXX_COMPILER_ID:MSVC>:/W3>
 )
 
 # MSVC-specific compile settings for the parser/lexer:
