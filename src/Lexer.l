@@ -103,7 +103,7 @@ COMMENT    #[^\n]*
 <IN_ARRAY>"${"                             { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_ARRAY_BRACE); }
 <IN_ARRAY>{FLOAT}                           { TOK_S(TOK_FLOAT); }
 <IN_ARRAY>{INTEGER}                        { TOK_S(TOK_INTEGER); }
-<IN_ARRAY>[^ \t\n\r;#$'"\\]+              { TOK_S(TOK_ARRAY_ELEM); }
+<IN_ARRAY>[^ \t\n\r;#$'"]+              { TOK_S(TOK_ARRAY_ELEM); }
 <IN_ARRAY>.                                { DRIVER->lex_error(yytext, yylineno); }
 
 <IN_ARRAY_BRACE>"${"                       { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); }
@@ -124,7 +124,7 @@ COMMENT    #[^\n]*
 <IN_DARRAY>"${"                            { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); BEGIN(IN_DARRAY_BRACE); }
 <IN_DARRAY>{FLOAT}                          { TOK_S(TOK_FLOAT); }
 <IN_DARRAY>{INTEGER}                       { TOK_S(TOK_INTEGER); }
-<IN_DARRAY>[^ \t\n\r;#$'"\\]+             { TOK_S(TOK_ARRAY_ELEM); }
+<IN_DARRAY>[^ \t\n\r;#$'"]+             { TOK_S(TOK_ARRAY_ELEM); }
 <IN_DARRAY>.                               { DRIVER->lex_error(yytext, yylineno); }
 
 <IN_DARRAY_BRACE>"${"                      { DRIVER->begin_brace(); DRIVER->set_yymore(); yymore(); }

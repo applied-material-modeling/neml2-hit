@@ -92,6 +92,17 @@ def test_parse_file_pre_kwarg(tmp_path):
     assert root.param_int("a") == 1
 
 
+def test_backslash_path_in_quoted_string():
+    """Backslashes survive inside quoted strings, so Windows paths parse.
+
+    A single backslash in the HIT text is written here with a raw string. The
+    value has no spaces because both quote styles tokenise as arrays and
+    whitespace still separates elements.
+    """
+    root = nmhit.parse_text(r"path = 'C:\Users\me\model'")
+    assert root.param_str("path") == r"C:\Users\me\model"
+
+
 # ── find / children ───────────────────────────────────────────────────────────
 
 

@@ -161,6 +161,18 @@ main()
     EXPECT(a1 == a2);
   });
 
+  run("backslash_path_in_quotes", []() {
+    // Backslashes must survive inside quoted strings so Windows paths are
+    // representable. Both quote styles tokenise as arrays, so the value has no
+    // spaces (whitespace still separates array elements). The C++ literals
+    // below use \\ per source escaping; the HIT text and parsed value each hold
+    // single backslashes.
+    auto sq = p("path = 'C:\\Users\\me\\model'");
+    EXPECT(sq->param<std::string>("path") == "C:\\Users\\me\\model");
+    auto dq = p("path = \"C:\\Users\\me\\model\"");
+    EXPECT(dq->param<std::string>("path") == "C:\\Users\\me\\model");
+  });
+
   // ── 2. Bool values ────────────────────────────────────────────────────────
 
   run("bool_true", []() {
