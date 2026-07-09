@@ -214,7 +214,9 @@ Only `param_str()` (and its `param_optional_str` variant) is allowed.
 
 A whitespace-delimited sequence of elements enclosed in single quotes **or double quotes** —
 both delimiters are completely equivalent.  Elements may be integers, floating-point numbers, or unquoted tokens
-(none of which may contain `;`, `#`, `$`, `'`, `"`, or `\`).
+(none of which may contain `;`, `#`, `$`, `'`, or `"`).  Backslashes **are** permitted inside
+quoted values, so a single-element quoted string can hold a Windows path, e.g.
+`path = 'C:\Users\me\model'`.  (Unquoted values still exclude `\` — quote such paths.)
 
 ```
 vals   = '1 2 3'
@@ -612,6 +614,9 @@ except nmhit.Error as e:
 Pre-generated parser/lexer sources are committed to `generated/` and used
 automatically for non-Debug build types, so end users and CI release builds do
 not need flex or bison installed.
+
+nmhit builds and is tested on **Linux, macOS, and Windows**, with GCC, Clang,
+or MSVC. Windows uses the Visual Studio generator (no developer shell needed).
 
 ### Configure and build
 
