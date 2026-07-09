@@ -7,11 +7,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ── Flex + Bison ───────────────────────────────────────────────────────────────
-# Debug builds regenerate the parser/lexer from source (flex + bison required).
-# All other build types (Release, RelWithDebInfo, MinSizeRel, …) use the
-# pre-generated files committed to generated/ and need no flex or bison.
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE)
+# Single-config Debug (or no-build-type) builds regenerate the parser/lexer from
+# source (flex + bison required). Every other case uses the pre-generated files
+# committed to generated/ and needs no flex or bison:
+#   - single-config Release/RelWithDebInfo/MinSizeRel, and
+#   - ALL multi-config generators (Visual Studio, Ninja Multi-Config), where the
+#     per-config build type is unknown at configure time so CMAKE_BUILD_TYPE is
+#     empty by design. This is the wheel-build path on Windows (scikit-build-core
+#     drives the Visual Studio generator), which must NOT require flex/bison.
+get_property(_nmhit_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT _nmhit_multi_config AND (CMAKE_BUILD_TYPE STREQUAL "Debug" OR NOT CMAKE_BUILD_TYPE))
   find_package(FLEX 2.6 REQUIRED)
   find_package(BISON 3.7 REQUIRED)
 
